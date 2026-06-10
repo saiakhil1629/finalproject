@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import Team from "@/models/Team";
-import User from "@/models/User";
+import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
 export async function POST(req) {
@@ -12,14 +10,16 @@ export async function POST(req) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    await dbConnect();
 
-    const user = await User.findById(decoded.userId);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    // Fetch user details
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("team_id")
+      .eq("id", decoded.userId)
+      .single();
 
-    if (user.teamId) {
+    if (userError) throw userError;
+    if (user.team_id) {
       return NextResponse.json({ error: "You are already in a team." }, { status: 400 });
     }
 
@@ -29,23 +29,43 @@ export async function POST(req) {
       return NextResponse.json({ error: "Join code is required" }, { status: 400 });
     }
 
-    const team = await Team.findOne({ joinCode: joinCode.trim().toUpperCase() });
+    // Find the team
+    const { data: team, error: teamError } = await supabase
+      .from("teams")
+      .select("*")
+      .eq("join_code", joinCode.trim().toUpperCase())
+      .maybeSingle();
+
+    if (teamError) throw teamError;
     if (!team) {
       return NextResponse.json({ error: "Invalid Join Code. Team not found." }, { status: 404 });
     }
 
-    if (team.members.length >= team.maxSize) {
+    // Count current team members
+    const { count, error: countError } = await supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .eq("team_id", team.id);
+
+    if (countError) throw countError;
+
+    if (count >= team.max_size) {
       return NextResponse.json({ error: "Team is already full." }, { status: 400 });
     }
 
-    // Add user to team
-    team.members.push(user._id);
-    await team.save();
+    // Join team: Update user
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({
+        role: "Member",
+        team_id: team.id,
+      })
+      .eq("id", decoded.userId);
 
-    // Update user details
-    user.role = "Member";
-    user.teamId = team._id;
-    await user.save();
+    if (updateError) throw updateError;
+
+    // Map properties to match frontend
+    team.joinCode = team.join_code;
 
     return NextResponse.json({ message: "Joined team successfully!", team }, { status: 200 });
   } catch (error) {

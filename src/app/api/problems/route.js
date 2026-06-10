@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import ProblemStatement from "@/models/ProblemStatement";
-import User from "@/models/User";
+import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
 // Verify admin helper
@@ -10,8 +8,11 @@ async function verifyAdmin(req) {
   if (!token) return false;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    await dbConnect();
-    const user = await User.findById(decoded.userId);
+    const { data: user } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", decoded.userId)
+      .single();
     return user && user.role === "Admin";
   } catch {
     return false;
@@ -20,9 +21,22 @@ async function verifyAdmin(req) {
 
 export async function GET() {
   try {
-    await dbConnect();
-    const problems = await ProblemStatement.find().sort({ createdAt: -1 });
-    return NextResponse.json({ problems });
+    const { data: problems, error } = await supabase
+      .from("problem_statements")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    // Map database keys to frontend (_id)
+    const formattedProblems = problems.map(p => ({
+      _id: p.id,
+      title: p.title,
+      description: p.description,
+      createdAt: p.created_at
+    }));
+
+    return NextResponse.json({ problems: formattedProblems });
   } catch (error) {
     console.error("Fetch problems error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -41,7 +55,14 @@ export async function POST(req) {
       return NextResponse.json({ error: "Missing title or description" }, { status: 400 });
     }
 
-    const problem = await ProblemStatement.create({ title, description });
+    const { data: problem, error } = await supabase
+      .from("problem_statements")
+      .insert({ title, description })
+      .select()
+      .single();
+
+    if (error) throw error;
+
     return NextResponse.json({ message: "Problem statement created", problem }, { status: 201 });
   } catch (error) {
     console.error("Create problem error:", error);
@@ -61,7 +82,13 @@ export async function DELETE(req) {
       return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     }
 
-    await ProblemStatement.findByIdAndDelete(id);
+    const { error } = await supabase
+      .from("problem_statements")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
     return NextResponse.json({ message: "Problem statement deleted" });
   } catch (error) {
     console.error("Delete problem error:", error);

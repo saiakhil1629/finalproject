@@ -1,45 +1,63 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import User from "@/models/User";
+import { supabase } from "@/lib/supabase";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export async function POST(req) {
   try {
-    await dbConnect();
     const { name, sucNumber, password, section, class: className, rollNumber, campus, rating } = await req.json();
 
     if (!name || !sucNumber || !password || !section || !className || !rollNumber || !campus) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const existingUser = await User.findOne({ sucNumber });
+    // Check if user exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("suc_number", sucNumber)
+      .maybeSingle();
+
+    if (checkError) {
+      throw checkError;
+    }
     if (existingUser) {
       return NextResponse.json({ error: "SUC Number already registered" }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Check if this is the first user; if so, make them Admin (saiakhil.g)
-    // Or if SUC number is "admin" or matches a specific admin ID. We can make "admin" user or allow registration.
-    // Let's make any user with name containing "saiakhil.g" or SUC "admin" an Admin.
-    const isFirstUser = (await User.countDocuments({})) === 0;
+    // Get count of registered users to check if this is the first user
+    const { count, error: countError } = await supabase
+      .from("users")
+      .select("*", { count: "exact", head: true });
+
+    if (countError) throw countError;
+
+    const isFirstUser = count === 0;
     const role = (isFirstUser || name.toLowerCase().includes("saiakhil") || sucNumber.toLowerCase() === "admin") ? "Admin" : "None";
 
-    const user = await User.create({
-      name,
-      sucNumber,
-      password: hashedPassword,
-      section,
-      class: className,
-      rollNumber,
-      campus,
-      rating: rating || 5,
-      role,
-    });
+    // Insert user into Supabase
+    const { data: user, error: insertError } = await supabase
+      .from("users")
+      .insert({
+        name,
+        suc_number: sucNumber,
+        password: hashedPassword,
+        section,
+        class: className,
+        roll_number: rollNumber,
+        campus,
+        rating: rating || 5,
+        role,
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role, name: user.name, campus: user.campus },
+      { userId: user.id, role: user.role, name: user.name, campus: user.campus },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -55,6 +73,6 @@ export async function POST(req) {
     return response;
   } catch (error) {
     console.error("Register Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }

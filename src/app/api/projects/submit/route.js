@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import Project from "@/models/Project";
-import User from "@/models/User";
+import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
 export async function POST(req) {
@@ -12,10 +10,15 @@ export async function POST(req) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    await dbConnect();
 
-    const user = await User.findById(decoded.userId);
-    if (!user) {
+    // Get user details
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", decoded.userId)
+      .single();
+
+    if (userError || !user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
@@ -26,32 +29,51 @@ export async function POST(req) {
     }
 
     if (type === "Main") {
-      if (user.role !== "Lead" || !user.teamId) {
+      if (user.role !== "Lead" || !user.team_id) {
         return NextResponse.json({ error: "Only team leads can submit the main project" }, { status: 403 });
       }
     }
 
     // Check if project already submitted
-    let existingProject;
+    let existingProject = null;
     if (type === "Main") {
-      existingProject = await Project.findOne({ type: "Main", teamId: user.teamId });
+      const { data } = await supabase
+        .from("projects")
+        .select("id")
+        .eq("type", "Main")
+        .eq("team_id", user.team_id)
+        .maybeSingle();
+      existingProject = data;
     } else {
-      existingProject = await Project.findOne({ type: "Mini", submitterId: user._id });
+      const { data } = await supabase
+        .from("projects")
+        .select("id")
+        .eq("type", "Mini")
+        .eq("submitter_id", user.id)
+        .maybeSingle();
+      existingProject = data;
     }
 
     if (existingProject) {
       return NextResponse.json({ error: `${type} Project has already been submitted.` }, { status: 400 });
     }
 
-    const newProject = await Project.create({
-      type,
-      submitterId: user._id,
-      teamId: type === "Main" ? user.teamId : null,
-      githubLink,
-      imageUrl,
-    });
+    // Insert new project submission
+    const { data: project, error: insertError } = await supabase
+      .from("projects")
+      .insert({
+        type,
+        submitter_id: user.id,
+        team_id: type === "Main" ? user.team_id : null,
+        github_link: githubLink,
+        image_url: imageUrl,
+      })
+      .select()
+      .single();
 
-    return NextResponse.json({ message: `${type} Project submitted successfully!`, project: newProject }, { status: 201 });
+    if (insertError) throw insertError;
+
+    return NextResponse.json({ message: `${type} Project submitted successfully!`, project }, { status: 201 });
   } catch (error) {
     console.error("Project Submit Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

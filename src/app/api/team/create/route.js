@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import Team from "@/models/Team";
-import User from "@/models/User";
+import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
-// Function to generate a simple unique join code
 function generateJoinCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
@@ -17,14 +14,16 @@ export async function POST(req) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    await dbConnect();
 
-    const user = await User.findById(decoded.userId);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    // Fetch user details
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("team_id")
+      .eq("id", decoded.userId)
+      .single();
 
-    if (user.teamId) {
+    if (userError) throw userError;
+    if (user.team_id) {
       return NextResponse.json({ error: "You are already in a team." }, { status: 400 });
     }
 
@@ -41,23 +40,49 @@ export async function POST(req) {
 
     // Generate unique code and verify it does not exist
     let joinCode = generateJoinCode();
-    let codeExists = await Team.findOne({ joinCode });
-    while (codeExists) {
+    let { data: existingTeam } = await supabase
+      .from("teams")
+      .select("id")
+      .eq("join_code", joinCode)
+      .maybeSingle();
+
+    while (existingTeam) {
       joinCode = generateJoinCode();
-      codeExists = await Team.findOne({ joinCode });
+      const res = await supabase
+        .from("teams")
+        .select("id")
+        .eq("join_code", joinCode)
+        .maybeSingle();
+      existingTeam = res.data;
     }
 
-    const team = await Team.create({
-      name: teamName,
-      leadId: user._id,
-      joinCode,
-      members: [user._id],
-      maxSize: parsedSize,
-    });
+    // Create the team
+    const { data: team, error: teamError } = await supabase
+      .from("teams")
+      .insert({
+        name: teamName,
+        lead_id: decoded.userId,
+        join_code: joinCode,
+        max_size: parsedSize,
+      })
+      .select()
+      .single();
 
-    user.role = "Lead";
-    user.teamId = team._id;
-    await user.save();
+    if (teamError) throw teamError;
+
+    // Update user details
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({
+        role: "Lead",
+        team_id: team.id,
+      })
+      .eq("id", decoded.userId);
+
+    if (updateError) throw updateError;
+
+    // Map properties to match frontend
+    team.joinCode = team.join_code;
 
     return NextResponse.json({ message: "Team created successfully!", team }, { status: 201 });
   } catch (error) {

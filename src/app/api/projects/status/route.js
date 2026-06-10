@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import Project from "@/models/Project";
+import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
 export async function GET(req) {
@@ -11,27 +10,52 @@ export async function GET(req) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    await dbConnect();
+
+    // Get user details
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("id, team_id")
+      .eq("id", decoded.userId)
+      .single();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     // Find if user submitted mini project
-    const miniProject = await Project.findOne({ type: "Mini", submitterId: decoded.userId });
+    const { data: miniDb } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("type", "Mini")
+      .eq("submitter_id", user.id)
+      .maybeSingle();
 
     // Find if user's team submitted main project (if they belong to a team)
-    // We can query user details first to find team ID
-    const userResponse = await fetch(`${req.nextUrl.origin}/api/auth/me`, {
-      headers: { cookie: `token=${token}` }
-    });
-    
-    if (!userResponse.ok) {
-      return NextResponse.json({ error: "Failed to get user context" }, { status: 401 });
+    let mainDb = null;
+    if (user.team_id) {
+      const { data } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("type", "Main")
+        .eq("team_id", user.team_id)
+        .maybeSingle();
+      mainDb = data;
     }
-    
-    const { user } = await userResponse.json();
 
-    let mainProject = null;
-    if (user.teamId) {
-      mainProject = await Project.findOne({ type: "Main", teamId: user.teamId._id });
-    }
+    // Map database properties to frontend camelCase
+    const miniProject = miniDb ? {
+      _id: miniDb.id,
+      githubLink: miniDb.github_link,
+      imageUrl: miniDb.image_url,
+      type: miniDb.type
+    } : null;
+
+    const mainProject = mainDb ? {
+      _id: mainDb.id,
+      githubLink: mainDb.github_link,
+      imageUrl: mainDb.image_url,
+      type: mainDb.type
+    } : null;
 
     return NextResponse.json({ miniProject, mainProject });
   } catch (error) {

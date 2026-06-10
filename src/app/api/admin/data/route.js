@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import User from "@/models/User";
-import Team from "@/models/Team";
-import Project from "@/models/Project";
+import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
 async function verifyAdmin(req) {
@@ -10,8 +7,11 @@ async function verifyAdmin(req) {
   if (!token) return false;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    await dbConnect();
-    const user = await User.findById(decoded.userId);
+    const { data: user } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", decoded.userId)
+      .single();
     return user && user.role === "Admin";
   } catch {
     return false;
@@ -25,25 +25,78 @@ export async function GET(req) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await dbConnect();
+    // Fetch all users (excluding Admin)
+    const { data: dbStudents, error: studentsError } = await supabase
+      .from("users")
+      .select("*, teamId:teams(*)")
+      .neq("role", "Admin")
+      .order("created_at", { ascending: false });
 
-    // Fetch all users (excluding passwords)
-    const students = await User.find({ role: { $ne: "Admin" } })
-      .select("-password")
-      .populate("teamId")
-      .sort({ createdAt: -1 });
+    if (studentsError) throw studentsError;
 
-    // Fetch all teams and populate lead & members
-    const teams = await Team.find()
-      .populate("leadId", "name sucNumber campus")
-      .populate("members", "name sucNumber campus section class rollNumber")
-      .sort({ createdAt: -1 });
+    // Fetch all teams and their leads
+    const { data: dbTeams, error: teamsError } = await supabase
+      .from("teams")
+      .select("*, lead:users(*)")
+      .order("created_at", { ascending: false });
+
+    if (teamsError) throw teamsError;
 
     // Fetch all project submissions
-    const projects = await Project.find()
-      .populate("submitterId", "name sucNumber campus class section")
-      .populate("teamId", "name joinCode")
-      .sort({ createdAt: -1 });
+    const { data: dbProjects, error: projectsError } = await supabase
+      .from("projects")
+      .select("*, submitter:users(*), team:teams(*)")
+      .order("created_at", { ascending: false });
+
+    if (projectsError) throw projectsError;
+
+    // Map database structures to camelCase format expected by the frontend
+    const students = dbStudents.map(student => ({
+      _id: student.id,
+      name: student.name,
+      sucNumber: student.suc_number,
+      campus: student.campus,
+      section: student.section,
+      class: student.class,
+      rollNumber: student.roll_number,
+      rating: student.rating,
+      role: student.role,
+      teamId: student.teamId ? { _id: student.teamId.id, name: student.teamId.name } : null
+    }));
+
+    // For each team, we need to fetch its member list
+    const { data: dbAllMembers } = await supabase
+      .from("users")
+      .select("id, name, suc_number, campus, team_id");
+
+    const teams = dbTeams.map(team => {
+      const teamMembers = (dbAllMembers || [])
+        .filter(m => m.team_id === team.id)
+        .map(m => ({
+          _id: m.id,
+          name: m.name,
+          sucNumber: m.suc_number,
+          campus: m.campus
+        }));
+
+      return {
+        _id: team.id,
+        name: team.name,
+        joinCode: team.join_code,
+        maxSize: team.max_size,
+        leadId: team.lead ? { _id: team.lead.id, name: team.lead.name, campus: team.lead.campus } : null,
+        members: teamMembers
+      };
+    });
+
+    const projects = dbProjects.map(proj => ({
+      _id: proj.id,
+      type: proj.type,
+      githubLink: proj.github_link,
+      imageUrl: proj.image_url,
+      submitterId: proj.submitter ? { name: proj.submitter.name, campus: proj.submitter.campus, sucNumber: proj.submitter.suc_number } : null,
+      teamId: proj.team ? { name: proj.team.name, joinCode: proj.team.join_code } : null
+    }));
 
     return NextResponse.json({ students, teams, projects });
   } catch (error) {

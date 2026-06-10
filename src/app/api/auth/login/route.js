@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import User from "@/models/User";
+import { supabase } from "@/lib/supabase";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export async function POST(req) {
   try {
-    await dbConnect();
     const { sucNumber, password } = await req.json();
 
     if (!sucNumber || !password) {
       return NextResponse.json({ error: "Missing SUC number or password" }, { status: 400 });
     }
 
-    const user = await User.findOne({ sucNumber });
+    const { data: user, error: selectError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("suc_number", sucNumber)
+      .maybeSingle();
+
+    if (selectError) throw selectError;
     if (!user) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 400 });
     }
@@ -24,7 +28,7 @@ export async function POST(req) {
     }
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role, name: user.name, campus: user.campus },
+      { userId: user.id, role: user.role, name: user.name, campus: user.campus },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
