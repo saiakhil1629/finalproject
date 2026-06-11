@@ -47,14 +47,18 @@ export async function GET(req) {
       _id: miniDb.id,
       githubLink: miniDb.github_link,
       imageUrl: miniDb.image_url,
-      type: miniDb.type
+      type: miniDb.type,
+      status: miniDb.status || "Pending",
+      adminComment: miniDb.admin_comment || ""
     } : null;
 
     const mainProject = mainDb ? {
       _id: mainDb.id,
       githubLink: mainDb.github_link,
       imageUrl: mainDb.image_url,
-      type: mainDb.type
+      type: mainDb.type,
+      status: mainDb.status || "Pending",
+      adminComment: mainDb.admin_comment || ""
     } : null;
 
     return NextResponse.json({ miniProject, mainProject });

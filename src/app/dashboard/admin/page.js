@@ -23,6 +23,12 @@ export default function AdminPanel() {
   // Modal image state
   const [viewImage, setViewImage] = useState(null);
 
+  // New review states
+  const [reviewProject, setReviewProject] = useState(null);
+  const [reviewStatus, setReviewStatus] = useState("Approved");
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
+
   useEffect(() => {
     if (user && user.role !== "Admin") {
       router.replace("/dashboard");
@@ -127,6 +133,41 @@ export default function AdminPanel() {
       }
     } catch (err) {
       setError("Failed to delete team.");
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewProject) return;
+
+    setReviewLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await fetch("/api/admin/projects/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId: reviewProject._id,
+          status: reviewStatus,
+          adminComment: reviewComment,
+        }),
+      });
+
+      const resJson = await res.json();
+      if (res.ok) {
+        setSuccess(`${reviewProject.type} project reviewed successfully!`);
+        setReviewProject(null);
+        setReviewComment("");
+        fetchAdminData();
+      } else {
+        setError(resJson.error || "Failed to submit review.");
+      }
+    } catch (err) {
+      setError("Failed to submit review.");
+    } finally {
+      setReviewLoading(false);
     }
   };
 
@@ -406,7 +447,9 @@ export default function AdminPanel() {
                   <th className="px-6 py-4">Submitter / Team</th>
                   <th className="px-6 py-4">GitHub Repository</th>
                   <th className="px-6 py-4">Campus</th>
+                  <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Output Screen</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -429,11 +472,32 @@ export default function AdminPanel() {
                     </td>
                     <td className="px-6 py-4 text-gray-400">{proj.submitterId?.campus}</td>
                     <td className="px-6 py-4">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                        proj.status === "Approved" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : 
+                        proj.status === "Rejected" ? "bg-red-500/10 text-red-400 border border-red-500/20" : 
+                        "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      }`}>
+                        {proj.status || "Pending"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
                       <button
                         onClick={() => setViewImage({ title: proj.type === "Main" ? proj.teamId?.name : proj.submitterId?.name, src: proj.imageUrl })}
                         className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/30 rounded-lg transition-all text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                       >
                         <FaEye className="text-xs" /> View Output
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => {
+                          setReviewProject(proj);
+                          setReviewStatus(proj.status === "Rejected" ? "Rejected" : "Approved");
+                          setReviewComment(proj.adminComment || "");
+                        }}
+                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/5 rounded-lg transition-all text-xs font-semibold cursor-pointer"
+                      >
+                        Review
                       </button>
                     </td>
                   </tr>
@@ -461,6 +525,98 @@ export default function AdminPanel() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={viewImage.src} alt="Submissions Preview" className="max-w-full max-h-[65vh] object-contain rounded-lg" />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP MODAL FOR PROJECT REVIEW */}
+      {reviewProject && (
+        <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-6 z-50 animate-fade-in">
+          <div className="relative max-w-lg w-full bg-[#111111] border border-white/10 rounded-2xl p-6 space-y-6">
+            <div className="flex justify-between items-center border-b border-white/5 pb-3">
+              <h3 className="text-white font-bold text-lg">Review Submission</h3>
+              <button
+                onClick={() => setReviewProject(null)}
+                className="text-gray-500 hover:text-white p-1 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            
+            <div className="space-y-2 text-sm text-gray-300">
+              <p><span className="text-gray-400 font-semibold">Project Type:</span> <strong className="text-white">{reviewProject.type}</strong></p>
+              <p>
+                <span className="text-gray-400 font-semibold">{reviewProject.type === "Main" ? "Team:" : "Student:"}</span>{" "}
+                <strong className="text-white">
+                  {reviewProject.type === "Main" ? reviewProject.teamId?.name : reviewProject.submitterId?.name}
+                </strong>
+              </p>
+              <p>
+                <span className="text-gray-400 font-semibold">GitHub Link:</span>{" "}
+                <a href={reviewProject.githubLink} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline font-mono text-xs break-all font-semibold">
+                  {reviewProject.githubLink}
+                </a>
+              </p>
+            </div>
+
+            <form onSubmit={handleReviewSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs text-gray-500 font-semibold uppercase mb-2">Review Status</label>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setReviewStatus("Approved")}
+                    className={`flex-1 py-2 px-4 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
+                      reviewStatus === "Approved"
+                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-400"
+                        : "bg-white/5 border-white/5 text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReviewStatus("Rejected")}
+                    className={`flex-1 py-2 px-4 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
+                      reviewStatus === "Rejected"
+                        ? "bg-red-500/10 border-red-500 text-red-400"
+                        : "bg-white/5 border-white/5 text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-gray-500 font-semibold uppercase mb-1">Feedback Comment</label>
+                <textarea
+                  placeholder="Enter what's right or what's wrong with the submission..."
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2.5 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setReviewProject(null)}
+                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/5 font-semibold rounded-xl text-sm transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={reviewLoading}
+                  className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl text-sm transition-all cursor-pointer shadow-lg shadow-emerald-500/10"
+                >
+                  {reviewLoading ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

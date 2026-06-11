@@ -71,6 +71,15 @@ function DashboardShell({ children }) {
                 </Link>
               )}
 
+              <Link
+                href="/dashboard/status"
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
+                  isActive("/dashboard/status") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <FaProjectDiagram className="text-xs" /> Project Status
+              </Link>
+
               {user.role === "Admin" && (
                 <Link
                   href="/dashboard/admin"

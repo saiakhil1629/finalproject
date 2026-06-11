@@ -95,7 +95,9 @@ export async function GET(req) {
       githubLink: proj.github_link,
       imageUrl: proj.image_url,
       submitterId: proj.submitter ? { name: proj.submitter.name, campus: proj.submitter.campus, sucNumber: proj.submitter.suc_number } : null,
-      teamId: proj.team ? { name: proj.team.name, joinCode: proj.team.join_code } : null
+      teamId: proj.team ? { name: proj.team.name, joinCode: proj.team.join_code } : null,
+      status: proj.status || "Pending",
+      adminComment: proj.admin_comment || ""
     }));
 
     return NextResponse.json({ students, teams, projects });
