@@ -1,12 +1,38 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { FaBookOpen, FaLightbulb, FaRegFolderOpen } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaBookOpen, FaLightbulb, FaRegFolderOpen, FaMagic, FaChevronDown } from "react-icons/fa";
+import ReactMarkdown from "react-markdown";
 
 export default function ProblemStatements() {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [explaining, setExplaining] = useState({});
+  const [explanations, setExplanations] = useState({});
+
+  const handleExplain = async (problem) => {
+    if (explanations[problem._id]) return; // already explained
+
+    setExplaining(prev => ({ ...prev, [problem._id]: true }));
+    try {
+      const res = await fetch("/api/gemini/explain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: problem.title, description: problem.description })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setExplanations(prev => ({ ...prev, [problem._id]: data.explanation }));
+      } else {
+        alert(data.error || "Failed to explain.");
+      }
+    } catch (err) {
+      alert("Error calling AI.");
+    } finally {
+      setExplaining(prev => ({ ...prev, [problem._id]: false }));
+    }
+  };
 
   useEffect(() => {
     const fetchProblems = async () => {
@@ -78,10 +104,44 @@ export default function ProblemStatements() {
                   <FaLightbulb className="text-emerald-400 text-sm" />
                 </div>
                 <h3 className="text-lg font-bold text-white tracking-tight">{problem.title}</h3>
+                
+                <button
+                  onClick={() => handleExplain(problem)}
+                  disabled={explaining[problem._id]}
+                  className="ml-auto flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/10 to-amber-500/10 border border-emerald-500/20 text-emerald-400 hover:text-white hover:border-emerald-500/40 hover:from-emerald-500/20 hover:to-amber-500/20 transition-all shadow-lg cursor-pointer disabled:opacity-50"
+                >
+                  {explaining[problem._id] ? (
+                    <span className="animate-pulse">Thinking...</span>
+                  ) : (
+                    <>
+                      <FaMagic className="text-amber-400" /> AI Breakdown
+                    </>
+                  )}
+                </button>
               </div>
               <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap pl-11">
                 {problem.description}
               </p>
+
+              <AnimatePresence>
+                {explanations[problem._id] && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-4 pt-4 border-t border-white/5 pl-11">
+                      <div className="flex items-center gap-2 mb-3 text-emerald-400 font-semibold text-sm">
+                        <FaMagic className="text-amber-400" /> Gemini Analysis
+                      </div>
+                      <div className="text-sm text-gray-300 prose prose-invert prose-emerald max-w-none prose-sm">
+                        <ReactMarkdown>{explanations[problem._id]}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           ))}
         </motion.div>
