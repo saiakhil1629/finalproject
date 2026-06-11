@@ -4,7 +4,7 @@ import { UserProvider, useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { FaUsers, FaBookOpen, FaSignOutAlt, FaUserShield, FaProjectDiagram, FaFileAlt, FaTrophy, FaBell } from "react-icons/fa";
+import { FaUsers, FaBookOpen, FaSignOutAlt, FaUserShield, FaProjectDiagram, FaFileAlt, FaTrophy, FaBell, FaBars, FaTimes } from "react-icons/fa";
 
 function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -106,6 +106,12 @@ function NotificationBell() {
 function DashboardShell({ children }) {
   const { user, loading, logout } = useUser();
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   if (loading) {
     return (
@@ -124,14 +130,22 @@ function DashboardShell({ children }) {
       {/* Navbar */}
       <header className="border-b border-white/5 sticky top-0 bg-[var(--color-background)]/85 backdrop-blur-md z-40 print:hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 lg:gap-8">
+            {/* Mobile Menu Toggle */}
+            <button 
+              className="lg:hidden p-2 text-gray-400 hover:text-white"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
+            </button>
+
             {/* Logo */}
             <Link href="/dashboard" className="text-lg font-bold text-white tracking-wider hover:opacity-95 transition-opacity">
               ADHOC <span className="text-emerald-500 text-xs">PORTAL</span>
             </Link>
 
-            {/* Nav links */}
-            <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+            {/* Desktop Nav links */}
+            <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
               <Link
                 href="/dashboard"
                 className={`px-4 py-2 rounded-xl transition-all ${
@@ -210,7 +224,7 @@ function DashboardShell({ children }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="hidden sm:inline text-sm text-gray-400 font-medium">
+            <span className="hidden md:inline text-sm text-gray-400 font-medium">
               Welcome, <span className="text-white font-semibold">{user.name}</span>
             </span>
 
@@ -225,6 +239,88 @@ function DashboardShell({ children }) {
             </button>
           </div>
         </div>
+
+        {/* Mobile Nav Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-[#111111] border-b border-white/5 absolute w-full left-0 top-16 z-50 px-4 py-4 shadow-2xl">
+            <nav className="flex flex-col gap-2 text-sm font-medium">
+              <Link
+                href="/dashboard"
+                className={`px-4 py-3 rounded-xl transition-all ${
+                  isActive("/dashboard") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/dashboard/problems"
+                className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
+                  isActive("/dashboard/problems") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <FaBookOpen className="text-sm" /> Problem Statements
+              </Link>
+              
+              {user.teamId ? (
+                <Link
+                  href="/dashboard/team"
+                  className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
+                    isActive("/dashboard/team") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  <FaUsers className="text-sm" /> Team: {user.teamId.name}
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard/team/build"
+                  className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
+                    isActive("/dashboard/team/build") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  <FaUsers className="text-sm" /> Build Team
+                </Link>
+              )}
+
+              <Link
+                href="/dashboard/status"
+                className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
+                  isActive("/dashboard/status") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <FaProjectDiagram className="text-sm" /> Project Status
+              </Link>
+
+              <Link
+                href="/dashboard/resume"
+                className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
+                  isActive("/dashboard/resume") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <FaFileAlt className="text-sm" /> Resume Builder
+              </Link>
+
+              <Link
+                href="/dashboard/leaderboard"
+                className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
+                  isActive("/dashboard/leaderboard") ? "bg-white/5 text-amber-400" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <FaTrophy className="text-sm text-amber-400" /> Leaderboard
+              </Link>
+
+              {user.role === "Admin" && (
+                <Link
+                  href="/dashboard/admin"
+                  className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
+                    isActive("/dashboard/admin") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  <FaUserShield className="text-sm" /> Admin Panel
+                </Link>
+              )}
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Global Announcement Banner */}

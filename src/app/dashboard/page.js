@@ -4,6 +4,7 @@ import { useUser } from "@/context/UserContext";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaGithub, FaImage, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaFileUpload } from "react-icons/fa";
+import LeaderboardWidget from "@/components/LeaderboardWidget";
 
 export default function Dashboard() {
   const { user } = useUser();
@@ -182,10 +183,18 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* MINI PROJECT SUBMISSION CARD */}
-        <div className="glass-panel p-8 rounded-3xl border border-white/5 flex flex-col justify-between card-3d">
+        {/* LEADERBOARD (LEFT SIDE) */}
+        <div className="lg:col-span-4 h-full">
+          <LeaderboardWidget />
+        </div>
+
+        {/* SUBMISSION FORMS (RIGHT SIDE) */}
+        <div className="lg:col-span-8 space-y-8">
+          
+          {/* MINI PROJECT SUBMISSION CARD */}
+          <div className="glass-panel p-8 rounded-3xl border border-white/5 flex flex-col justify-between card-3d">
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-white tracking-wide">Mini Project</h2>

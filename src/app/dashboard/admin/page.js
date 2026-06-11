@@ -111,6 +111,24 @@ export default function AdminPanel() {
     }
   };
 
+  const handleRatingChange = async (studentId, newRating) => {
+    try {
+      const res = await fetch("/api/admin/users/rating", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: studentId, newRating: parseInt(newRating) }),
+      });
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        alert("Failed to update rating");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error updating rating");
+    }
+  };
+
   const handleDeleteTeam = async (teamId) => {
     if (!confirm("Are you sure you want to delete this team? All members' roles and team status will be reset.")) return;
 
@@ -371,7 +389,19 @@ export default function AdminPanel() {
                       <td className="px-6 py-4">
                         {student.class} - {student.section} - #{student.rollNumber}
                       </td>
-                      <td className="px-6 py-4 text-amber-400 font-bold">{"★".repeat(student.rating)}</td>
+                      <td className="px-6 py-4">
+                        <select
+                          value={student.rating || 5}
+                          onChange={(e) => handleRatingChange(student._id, e.target.value)}
+                          className="bg-white/5 border border-white/10 rounded-lg text-amber-400 font-bold px-2 py-1 focus:outline-none focus:border-amber-500/50 cursor-pointer"
+                        >
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                            <option key={num} value={num} className="bg-[#111111]">
+                              {num} ★
+                            </option>
+                          ))}
+                        </select>
+                      </td>
                       <td className="px-6 py-4 text-gray-400">{student.teamId ? student.teamId.name : "None"}</td>
                     </tr>
                   ))}
