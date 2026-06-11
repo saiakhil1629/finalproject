@@ -3,7 +3,7 @@
 import { UserProvider, useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaUsers, FaBookOpen, FaSignOutAlt, FaUserShield, FaProjectDiagram } from "react-icons/fa";
+import { FaUsers, FaBookOpen, FaSignOutAlt, FaUserShield, FaProjectDiagram, FaFileAlt } from "react-icons/fa";
 
 function DashboardShell({ children }) {
   const { user, loading, logout } = useUser();
@@ -22,9 +22,9 @@ function DashboardShell({ children }) {
   const isActive = (path) => pathname === path;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-background)] text-white">
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)] text-white print:bg-white print:text-black">
       {/* Navbar */}
-      <header className="border-b border-white/5 sticky top-0 bg-[var(--color-background)]/85 backdrop-blur-md z-40">
+      <header className="border-b border-white/5 sticky top-0 bg-[var(--color-background)]/85 backdrop-blur-md z-40 print:hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
             {/* Logo */}
@@ -80,6 +80,15 @@ function DashboardShell({ children }) {
                 <FaProjectDiagram className="text-xs" /> Project Status
               </Link>
 
+              <Link
+                href="/dashboard/resume"
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
+                  isActive("/dashboard/resume") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <FaFileAlt className="text-xs" /> Resume Builder
+              </Link>
+
               {user.role === "Admin" && (
                 <Link
                   href="/dashboard/admin"
@@ -115,7 +124,7 @@ function DashboardShell({ children }) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-8 text-center text-sm text-gray-500 mt-12 bg-black/20">
+      <footer className="border-t border-white/5 py-8 text-center text-sm text-gray-500 mt-12 bg-black/20 print:hidden">
         <p>Adhoc Network Tech</p>
         <p className="mt-1">
           Made by <span className="text-emerald-500 font-medium">saiakhil.g</span>
