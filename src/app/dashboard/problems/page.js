@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { FaBookOpen, FaLightbulb, FaRegFolderOpen } from "react-icons/fa";
 
 export default function ProblemStatements() {
@@ -54,10 +55,22 @@ export default function ProblemStatements() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <motion.div 
+          className="grid grid-cols-1 gap-6"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+          }}
+        >
           {problems.map((problem) => (
-            <div
+            <motion.div
               key={problem._id}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
               className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-emerald-500/20 transition-all hover:shadow-xl hover:shadow-emerald-950/2 space-y-4 card-3d-secondary"
             >
               <div className="flex items-center gap-3">
@@ -69,9 +82,9 @@ export default function ProblemStatements() {
               <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap pl-11">
                 {problem.description}
               </p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
     </div>

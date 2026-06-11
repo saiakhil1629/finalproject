@@ -49,13 +49,25 @@ export default function LeaderboardWidget() {
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4">
+      <motion.div 
+        className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+        }}
+      >
         {top3.map((student, idx) => {
           const isCurrentUser = user && user.id === student.id;
           const isFirst = idx === 0;
           return (
-            <div 
+            <motion.div 
               key={student.id} 
+              variants={{
+                hidden: { opacity: 0, x: -20 },
+                visible: { opacity: 1, x: 0 }
+              }}
               className={`flex items-center gap-3 p-3 rounded-2xl border ${
                 isFirst ? "bg-amber-500/10 border-amber-500/30 shadow-[0_0_15px_rgba(251,191,36,0.15)]" : 
                 isCurrentUser ? "bg-emerald-500/10 border-emerald-500/30" : 
@@ -82,7 +94,7 @@ export default function LeaderboardWidget() {
                   {student.score} <FaStar className="text-[10px]" />
                 </p>
               </div>
-            </div>
+            </motion.div>
           );
         })}
 
@@ -90,8 +102,12 @@ export default function LeaderboardWidget() {
           const isCurrentUser = user && user.id === student.id;
           const rank = idx + 4;
           return (
-            <div 
+            <motion.div 
               key={student.id} 
+              variants={{
+                hidden: { opacity: 0, x: -20 },
+                visible: { opacity: 1, x: 0 }
+              }}
               className={`flex items-center gap-3 p-2.5 rounded-xl border ${
                 isCurrentUser ? "bg-emerald-500/10 border-emerald-500/30" : "border-transparent hover:bg-white/5"
               }`}
@@ -107,10 +123,10 @@ export default function LeaderboardWidget() {
               <div className="font-bold text-amber-400/80 flex items-center gap-1 text-xs shrink-0">
                 {student.score} <FaStar className="text-[10px]" />
               </div>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }

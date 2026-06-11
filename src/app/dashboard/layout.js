@@ -4,7 +4,9 @@ import { UserProvider, useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaUsers, FaBookOpen, FaSignOutAlt, FaUserShield, FaProjectDiagram, FaFileAlt, FaTrophy, FaBell, FaBars, FaTimes } from "react-icons/fa";
+import BackgroundMesh from "@/components/BackgroundMesh";
 
 function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -126,7 +128,10 @@ function DashboardShell({ children }) {
   const isActive = (path) => pathname === path;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-background)] text-white print:bg-white print:text-black">
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)] text-white print:bg-white print:text-black relative overflow-hidden">
+      
+      {/* Ambient Background */}
+      <BackgroundMesh />
       {/* Navbar */}
       <header className="border-b border-white/5 sticky top-0 bg-[var(--color-background)]/85 backdrop-blur-md z-40 print:hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -199,15 +204,6 @@ function DashboardShell({ children }) {
                 }`}
               >
                 <FaFileAlt className="text-xs" /> Resume Builder
-              </Link>
-
-              <Link
-                href="/dashboard/leaderboard"
-                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
-                  isActive("/dashboard/leaderboard") ? "bg-white/5 text-amber-400" : "text-gray-400 hover:text-white"
-                }`}
-              >
-                <FaTrophy className="text-xs text-amber-400" /> Leaderboard
               </Link>
 
               {user.role === "Admin" && (
@@ -299,15 +295,6 @@ function DashboardShell({ children }) {
                 <FaFileAlt className="text-sm" /> Resume Builder
               </Link>
 
-              <Link
-                href="/dashboard/leaderboard"
-                className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
-                  isActive("/dashboard/leaderboard") ? "bg-white/5 text-amber-400" : "text-gray-400 hover:text-white"
-                }`}
-              >
-                <FaTrophy className="text-sm text-amber-400" /> Leaderboard
-              </Link>
-
               {user.role === "Admin" && (
                 <Link
                   href="/dashboard/admin"
@@ -333,9 +320,18 @@ function DashboardShell({ children }) {
       </div>
 
       {/* Main Dashboard Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
-        {children}
-      </main>
+      <AnimatePresence mode="wait">
+        <motion.main 
+          key={pathname}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -15 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 relative z-10"
+        >
+          {children}
+        </motion.main>
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 text-center text-sm text-gray-500 mt-12 bg-black/20 print:hidden">
