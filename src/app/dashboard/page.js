@@ -35,12 +35,46 @@ export default function Dashboard() {
     fetchSubmissions();
   }, []);
 
-  const convertToBase64 = (file) => {
+  const compressImage = (file) => {
     return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      fileReader.readAsDataURL(file);
-      fileReader.onload = () => resolve(fileReader.result);
-      fileReader.onerror = (error) => reject(error);
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          
+          // Max dimensions
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Compress as JPEG
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          resolve(dataUrl);
+        };
+        img.onerror = (error) => reject(error);
+      };
+      reader.onerror = (error) => reject(error);
     });
   };
 
@@ -48,13 +82,14 @@ export default function Dashboard() {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) { // 2MB limit
-      alert("Image is too large. Limit it to 2MB.");
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      alert("Image is too large. Limit it to 5MB.");
       return;
     }
 
     try {
-      const base64 = await convertToBase64(file);
+      // Compress and convert to base64
+      const base64 = await compressImage(file);
       if (formType === "mini") {
         setMiniForm({ ...miniForm, image: base64 });
       } else {
@@ -203,7 +238,7 @@ export default function Dashboard() {
                     <p className="text-gray-400 text-sm">
                       {miniForm.image ? "Image Selected (Click to change)" : "Upload Output Screenshot"}
                     </p>
-                    <p className="text-gray-600 text-xs">PNG, JPG up to 2MB</p>
+                    <p className="text-gray-600 text-xs">PNG, JPG up to 5MB</p>
                   </div>
                 </div>
 
@@ -298,7 +333,7 @@ export default function Dashboard() {
                     <p className="text-gray-400 text-sm">
                       {mainForm.image ? "Image Selected (Click to change)" : "Upload Output Screenshot"}
                     </p>
-                    <p className="text-gray-600 text-xs">PNG, JPG up to 2MB</p>
+                    <p className="text-gray-600 text-xs">PNG, JPG up to 5MB</p>
                   </div>
                 </div>
 

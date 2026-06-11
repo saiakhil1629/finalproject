@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
+export const maxDuration = 60; // Set max execution time to 60 seconds
+
 export async function POST(req) {
   try {
     const token = req.cookies.get("token")?.value;
