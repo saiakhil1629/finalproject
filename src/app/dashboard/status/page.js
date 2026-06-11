@@ -8,7 +8,7 @@ import { FaGithub, FaEye, FaCheckCircle, FaTimesCircle, FaClock, FaCommentDots, 
 
 export default function ProjectStatusPage() {
   const { user } = useUser();
-  const [submissions, setSubmissions] = useState({ miniProject: null, mainProject: null });
+  const [submissions, setSubmissions] = useState({ miniProjects: [], mainProject: null });
   const [loading, setLoading] = useState(true);
   const [viewImage, setViewImage] = useState(null);
 
@@ -61,10 +61,10 @@ export default function ProjectStatusPage() {
     );
   }
 
-  const renderProjectCard = (project, title, isAllowed) => {
+  const renderProjectCard = (project, title, isAllowed, key = null) => {
     if (!isAllowed) {
       return (
-        <div className="glass-panel p-8 rounded-3xl border border-white/5 opacity-60 flex flex-col justify-between h-full min-h-[300px]">
+        <div key={key} className="glass-panel p-8 rounded-3xl border border-white/5 opacity-60 flex flex-col justify-between h-full min-h-[300px]">
           <div>
             <h2 className="text-xl font-bold text-white tracking-wide mb-4">{title}</h2>
             <p className="text-gray-400 text-sm">
@@ -77,7 +77,7 @@ export default function ProjectStatusPage() {
 
     if (!project) {
       return (
-        <div className="glass-panel p-8 rounded-3xl border border-white/5 flex flex-col justify-between h-full min-h-[300px] card-3d-secondary">
+        <div key={key} className="glass-panel p-8 rounded-3xl border border-white/5 flex flex-col justify-between h-full min-h-[300px] card-3d-secondary">
           <div>
             <h2 className="text-xl font-bold text-white tracking-wide mb-4">{title}</h2>
             <p className="text-gray-400 text-sm mb-6">
@@ -95,7 +95,7 @@ export default function ProjectStatusPage() {
     }
 
     return (
-      <div className="glass-panel p-8 rounded-3xl border border-white/5 flex flex-col justify-between h-full min-h-[300px] card-3d">
+      <div key={key} className="glass-panel p-8 rounded-3xl border border-white/5 flex flex-col justify-between h-full min-h-[300px] card-3d">
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white tracking-wide">{title}</h2>
@@ -155,8 +155,14 @@ export default function ProjectStatusPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {renderProjectCard(submissions.miniProject, "Mini Project", true)}
-        {renderProjectCard(submissions.mainProject, "Main Project", user.role === "Lead" || user.role === "Member" || user.teamId !== null)}
+        {submissions.miniProjects && submissions.miniProjects.length > 0 ? (
+          submissions.miniProjects.map((mini, idx) => 
+            renderProjectCard(mini, `Mini Project ${idx + 1}`, true, mini._id)
+          )
+        ) : (
+          renderProjectCard(null, "Mini Project 1", true, "mini-empty")
+        )}
+        {renderProjectCard(submissions.mainProject, "Main Project", user.role === "Lead" || user.role === "Member" || user.teamId !== null, "main")}
       </div>
 
       {/* Screenshot View Modal */}

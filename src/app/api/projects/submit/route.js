@@ -37,7 +37,6 @@ export async function POST(req) {
     }
 
     // Check if project already submitted
-    let existingProject = null;
     if (type === "Main") {
       const { data } = await supabase
         .from("projects")
@@ -45,19 +44,20 @@ export async function POST(req) {
         .eq("type", "Main")
         .eq("team_id", user.team_id)
         .maybeSingle();
-      existingProject = data;
+        
+      if (data) {
+        return NextResponse.json({ error: "Main Project has already been submitted." }, { status: 400 });
+      }
     } else {
-      const { data } = await supabase
+      const { count } = await supabase
         .from("projects")
-        .select("id")
+        .select("id", { count: "exact", head: true })
         .eq("type", "Mini")
-        .eq("submitter_id", user.id)
-        .maybeSingle();
-      existingProject = data;
-    }
-
-    if (existingProject) {
-      return NextResponse.json({ error: `${type} Project has already been submitted.` }, { status: 400 });
+        .eq("submitter_id", user.id);
+        
+      if (count >= 2) {
+        return NextResponse.json({ error: "Maximum of 2 Mini Projects allowed." }, { status: 400 });
+      }
     }
 
     let finalImageUrl = imageUrl;

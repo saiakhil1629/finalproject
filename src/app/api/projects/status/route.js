@@ -22,13 +22,13 @@ export async function GET(req) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Find if user submitted mini project
-    const { data: miniDb } = await supabase
+    // Find if user submitted mini projects
+    const { data: miniDbs } = await supabase
       .from("projects")
       .select("*")
       .eq("type", "Mini")
       .eq("submitter_id", user.id)
-      .maybeSingle();
+      .order('created_at', { ascending: true });
 
     // Find if user's team submitted main project (if they belong to a team)
     let mainDb = null;
@@ -42,15 +42,14 @@ export async function GET(req) {
       mainDb = data;
     }
 
-    // Map database properties to frontend camelCase
-    const miniProject = miniDb ? {
+    const miniProjects = (miniDbs || []).map(miniDb => ({
       _id: miniDb.id,
       githubLink: miniDb.github_link,
       imageUrl: miniDb.image_url,
       type: miniDb.type,
       status: miniDb.status || "Pending",
       adminComment: miniDb.admin_comment || ""
-    } : null;
+    }));
 
     const mainProject = mainDb ? {
       _id: mainDb.id,
@@ -61,7 +60,7 @@ export async function GET(req) {
       adminComment: mainDb.admin_comment || ""
     } : null;
 
-    return NextResponse.json({ miniProject, mainProject });
+    return NextResponse.json({ miniProjects, mainProject });
   } catch (error) {
     console.error("Project status error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

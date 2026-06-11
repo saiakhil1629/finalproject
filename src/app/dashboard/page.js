@@ -7,7 +7,7 @@ import { FaGithub, FaImage, FaCheckCircle, FaExclamationCircle, FaInfoCircle, Fa
 
 export default function Dashboard() {
   const { user } = useUser();
-  const [submissions, setSubmissions] = useState({ miniProject: null, mainProject: null });
+  const [submissions, setSubmissions] = useState({ miniProjects: [], mainProject: null });
   const [loading, setLoading] = useState(true);
   
   // Forms state
@@ -194,81 +194,94 @@ export default function Dashboard() {
               </span>
             </div>
 
-            {submissions.miniProject ? (
-              <div className="space-y-4 py-4 text-center">
-                <FaCheckCircle className="text-emerald-400 text-5xl mx-auto animate-pulse" />
-                <h3 className="text-white font-semibold">Submitted successfully</h3>
-                <div className="bg-white/5 border border-white/5 p-4 rounded-2xl text-left text-sm space-y-2 max-w-sm mx-auto">
-                  <p className="truncate text-gray-400">
-                    <strong className="text-white">Github:</strong> <a href={submissions.miniProject.githubLink} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">{submissions.miniProject.githubLink}</a>
-                  </p>
-                  <p className="text-gray-400 flex items-center gap-2">
-                    <strong className="text-white">Status:</strong> Completed
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleMiniSubmit} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} className="space-y-4">
-                <p className="text-gray-400 text-sm mb-4">
-                  Please submit your link to the GitHub repository and upload a screenshot of your working project.
-                </p>
-
-                <div className="relative">
-                  <FaGithub className="absolute left-4 top-3.5 text-gray-500" />
-                  <input
-                    type="url"
-                    placeholder="GitHub Repository URL"
-                    value={miniForm.githubLink}
-                    onChange={(e) => setMiniForm({ ...miniForm, githubLink: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
-                    required
-                  />
-                </div>
-
-                <div className="relative border border-dashed border-white/10 hover:border-emerald-500/30 rounded-xl p-4 transition-all">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, "mini")}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    id="mini-file-input"
-                  />
-                  <div className="text-center space-y-2 pointer-events-none">
-                    <FaFileUpload className="text-gray-500 text-2xl mx-auto" />
-                    <p className="text-gray-400 text-sm">
-                      {miniForm.image ? "Image Selected (Click to change)" : "Upload Output Screenshot"}
+            <div className="space-y-6">
+              {/* Show already submitted mini projects */}
+              {submissions.miniProjects.map((mini, idx) => (
+                <div key={mini._id} className="space-y-4 py-4 text-center border-b border-white/5 last:border-0 pb-6">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <FaCheckCircle className="text-emerald-400 text-3xl" />
+                    <h3 className="text-white font-semibold">Mini Project {idx + 1} Submitted</h3>
+                  </div>
+                  <div className="bg-white/5 border border-white/5 p-4 rounded-2xl text-left text-sm space-y-2 max-w-sm mx-auto">
+                    <p className="truncate text-gray-400">
+                      <strong className="text-white">Github:</strong> <a href={mini.githubLink} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">{mini.githubLink}</a>
                     </p>
-                    <p className="text-gray-600 text-xs">PNG, JPG up to 5MB</p>
+                    <p className="text-gray-400 flex items-center gap-2">
+                      <strong className="text-white">Status:</strong> Completed
+                    </p>
                   </div>
                 </div>
+              ))}
 
-                {miniForm.image && (
-                  <div className="relative w-full h-24 rounded-lg overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={miniForm.image} alt="Preview" className="h-full object-contain" />
+              {/* Show submission form if under 2 projects */}
+              {submissions.miniProjects.length < 2 && (
+                <form onSubmit={handleMiniSubmit} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} className="space-y-4 mt-4">
+                  <div className="text-center mb-4">
+                    <span className="text-xs bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20">
+                      Submission {submissions.miniProjects.length + 1} of 2
+                    </span>
                   </div>
-                )}
-
-                {miniStatus.error && (
-                  <p className="text-red-400 text-xs flex items-center gap-2">
-                    <FaExclamationCircle /> {miniStatus.error}
+                  <p className="text-gray-400 text-sm mb-4">
+                    Please submit your link to the GitHub repository and upload a screenshot of your working project.
                   </p>
-                )}
-                {miniStatus.success && (
-                  <p className="text-emerald-400 text-xs flex items-center gap-2">
-                    <FaCheckCircle /> {miniStatus.success}
-                  </p>
-                )}
 
-                <button
-                  type="submit"
-                  disabled={miniStatus.loading}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/10 active:scale-98"
-                >
-                  {miniStatus.loading ? "Submitting..." : "Submit Mini Project"}
-                </button>
-              </form>
-            )}
+                  <div className="relative">
+                    <FaGithub className="absolute left-4 top-3.5 text-gray-500" />
+                    <input
+                      type="url"
+                      placeholder="GitHub Repository URL"
+                      value={miniForm.githubLink}
+                      onChange={(e) => setMiniForm({ ...miniForm, githubLink: e.target.value })}
+                      className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
+                      required
+                    />
+                  </div>
+
+                  <div className="relative border border-dashed border-white/10 hover:border-emerald-500/30 rounded-xl p-4 transition-all">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, "mini")}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      id="mini-file-input"
+                    />
+                    <div className="text-center space-y-2 pointer-events-none">
+                      <FaFileUpload className="text-gray-500 text-2xl mx-auto" />
+                      <p className="text-gray-400 text-sm">
+                        {miniForm.image ? "Image Selected (Click to change)" : "Upload Output Screenshot"}
+                      </p>
+                      <p className="text-gray-600 text-xs">PNG, JPG up to 5MB</p>
+                    </div>
+                  </div>
+
+                  {miniForm.image && (
+                    <div className="relative w-full h-24 rounded-lg overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={miniForm.image} alt="Preview" className="h-full object-contain" />
+                    </div>
+                  )}
+
+                  {miniStatus.error && (
+                    <p className="text-red-400 text-xs flex items-center gap-2">
+                      <FaExclamationCircle /> {miniStatus.error}
+                    </p>
+                  )}
+                  {miniStatus.success && (
+                    <p className="text-emerald-400 text-xs flex items-center gap-2">
+                      <FaCheckCircle /> {miniStatus.success}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={miniStatus.loading}
+                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/10 active:scale-98"
+                  >
+                    {miniStatus.loading ? "Submitting..." : `Submit Mini Project ${submissions.miniProjects.length + 1}`}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </div>
 
