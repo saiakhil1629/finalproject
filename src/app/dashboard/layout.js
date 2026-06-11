@@ -3,7 +3,105 @@
 import { UserProvider, useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaUsers, FaBookOpen, FaSignOutAlt, FaUserShield, FaProjectDiagram, FaFileAlt } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaUsers, FaBookOpen, FaSignOutAlt, FaUserShield, FaProjectDiagram, FaFileAlt, FaTrophy, FaBell } from "react-icons/fa";
+
+function NotificationBell() {
+  const [notifications, setNotifications] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    const fetchStatusAndCheck = async () => {
+      try {
+        const res = await fetch("/api/projects/status");
+        if (res.ok) {
+          const data = await res.json();
+          const previousStateStr = localStorage.getItem("projectStatusState");
+          let previousState = previousStateStr ? JSON.parse(previousStateStr) : null;
+          
+          let newNotifications = [];
+          
+          const compareProject = (prev, curr, title) => {
+            if (!prev && curr) {
+              newNotifications.push({ id: Date.now() + Math.random(), message: `You submitted ${title}.`, time: new Date().toISOString(), read: false });
+            } else if (prev && curr) {
+              if (prev.status !== curr.status) {
+                newNotifications.push({ id: Date.now() + Math.random(), message: `${title} status changed to ${curr.status}.`, time: new Date().toISOString(), read: false });
+              }
+              if (prev.adminComment !== curr.adminComment && curr.adminComment) {
+                newNotifications.push({ id: Date.now() + Math.random(), message: `New feedback on ${title}.`, time: new Date().toISOString(), read: false });
+              }
+            }
+          };
+
+          if (previousState) {
+             const currMinis = data.miniProjects || [];
+             const prevMinis = previousState.miniProjects || [];
+             currMinis.forEach((currMini, idx) => {
+               const prevMini = prevMinis.find(p => p._id === currMini._id);
+               compareProject(prevMini, currMini, `Mini Project ${idx + 1}`);
+             });
+             compareProject(previousState.mainProject, data.mainProject, "Main Project");
+          }
+
+          if (newNotifications.length > 0) {
+            const existing = JSON.parse(localStorage.getItem("notifications") || "[]");
+            const updated = [...newNotifications, ...existing].slice(0, 20);
+            localStorage.setItem("notifications", JSON.stringify(updated));
+            setNotifications(updated);
+          } else {
+            setNotifications(JSON.parse(localStorage.getItem("notifications") || "[]"));
+          }
+
+          localStorage.setItem("projectStatusState", JSON.stringify(data));
+        }
+      } catch(e) {}
+    };
+    
+    fetchStatusAndCheck();
+    setNotifications(JSON.parse(localStorage.getItem("notifications") || "[]"));
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAllRead = () => {
+    const updated = notifications.map(n => ({...n, read: true}));
+    setNotifications(updated);
+    localStorage.setItem("notifications", JSON.stringify(updated));
+  };
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => { setShowDropdown(!showDropdown); if(!showDropdown && unreadCount > 0) markAllRead(); }} 
+        className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-gray-400 hover:text-white transition-all cursor-pointer relative"
+      >
+        <FaBell className="text-sm" />
+        {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>}
+      </button>
+      
+      {showDropdown && (
+        <div className="absolute right-0 mt-3 w-80 bg-[#111111] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
+          <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+            <h3 className="font-bold text-sm text-white">Notifications</h3>
+          </div>
+          <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+            {notifications.length === 0 ? (
+              <p className="p-4 text-xs text-gray-500 text-center">No notifications yet.</p>
+            ) : (
+              notifications.map(n => (
+                <div key={n.id} className={`p-4 border-b border-white/5 last:border-0 text-sm ${n.read ? 'text-gray-400' : 'text-white bg-white/5'}`}>
+                  <p>{n.message}</p>
+                  <span className="text-[10px] text-gray-500 mt-1 block">{new Date(n.time).toLocaleString()}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function DashboardShell({ children }) {
   const { user, loading, logout } = useUser();
@@ -89,6 +187,15 @@ function DashboardShell({ children }) {
                 <FaFileAlt className="text-xs" /> Resume Builder
               </Link>
 
+              <Link
+                href="/dashboard/leaderboard"
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
+                  isActive("/dashboard/leaderboard") ? "bg-white/5 text-amber-400" : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <FaTrophy className="text-xs text-amber-400" /> Leaderboard
+              </Link>
+
               {user.role === "Admin" && (
                 <Link
                   href="/dashboard/admin"
@@ -107,6 +214,8 @@ function DashboardShell({ children }) {
               Welcome, <span className="text-white font-semibold">{user.name}</span>
             </span>
 
+            <NotificationBell />
+
             <button
               onClick={logout}
               className="p-2.5 rounded-xl bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 text-gray-400 hover:text-red-400 transition-all cursor-pointer"
@@ -117,6 +226,15 @@ function DashboardShell({ children }) {
           </div>
         </div>
       </header>
+
+      {/* Global Announcement Banner */}
+      <div className="bg-gradient-to-r from-red-600/90 to-red-500/90 border-b border-red-500 shadow-md print:hidden relative z-30">
+        <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-center">
+          <p className="text-white text-sm font-medium flex items-center gap-2 animate-pulse">
+            <span className="text-lg">🚨</span> Announcement: Mini projects Deadline till 13th June 12am.
+          </p>
+        </div>
+      </div>
 
       {/* Main Dashboard Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
