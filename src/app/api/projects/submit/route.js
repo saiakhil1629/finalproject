@@ -58,6 +58,38 @@ export async function POST(req) {
       return NextResponse.json({ error: `${type} Project has already been submitted.` }, { status: 400 });
     }
 
+    let finalImageUrl = imageUrl;
+
+    // Check if the imageUrl is a base64 string and process storage upload
+    if (imageUrl && imageUrl.startsWith("data:image/")) {
+      try {
+        const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        const mimeType = imageUrl.split(";")[0].split(":")[1];
+        const fileExt = mimeType.split("/")[1] || "png";
+        const fileName = `${type.toLowerCase()}-${user.id}-${Date.now()}.${fileExt}`;
+
+        // Upload to Supabase Storage 'project-screenshots' bucket
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("project-screenshots")
+          .upload(fileName, buffer, {
+            contentType: mimeType,
+            upsert: true,
+          });
+
+        if (uploadError) {
+          console.error("Storage upload failed, using base64 fallback:", uploadError);
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from("project-screenshots")
+            .getPublicUrl(fileName);
+          finalImageUrl = publicUrl;
+        }
+      } catch (storageErr) {
+        console.error("Error processing image upload, using base64 fallback:", storageErr);
+      }
+    }
+
     // Insert new project submission
     const { data: project, error: insertError } = await supabase
       .from("projects")
@@ -66,7 +98,7 @@ export async function POST(req) {
         submitter_id: user.id,
         team_id: type === "Main" ? user.team_id : null,
         github_link: githubLink,
-        image_url: imageUrl,
+        image_url: finalImageUrl,
       })
       .select()
       .single();

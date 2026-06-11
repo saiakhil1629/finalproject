@@ -84,6 +84,7 @@ export default function Dashboard() {
       if (!res.ok) throw new Error(data.error || "Submission failed");
 
       setMiniStatus({ loading: false, success: "Mini Project submitted successfully!", error: "" });
+      alert("Submission of your Mini Project has been completed successfully.");
       fetchSubmissions();
     } catch (err) {
       setMiniStatus({ loading: false, error: err.message, success: "" });
@@ -109,6 +110,7 @@ export default function Dashboard() {
       if (!res.ok) throw new Error(data.error || "Submission failed");
 
       setMainStatus({ loading: false, success: "Main Project submitted successfully!", error: "" });
+      alert("Submission of your Main Project has been completed successfully.");
       fetchSubmissions();
     } catch (err) {
       setMainStatus({ loading: false, error: err.message, success: "" });
