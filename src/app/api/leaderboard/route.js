@@ -28,14 +28,13 @@ export async function GET() {
         });
       }
 
-      // Calculation: Mini = 10, Main = 20, Base = Rating
-      const score = (miniCount * 10) + (mainCount * 20) + (user.rating || 5);
+      // Calculation: Mini = 10, Main = 20
+      const score = (miniCount * 10) + (mainCount * 20);
       
       return {
         id: user.id,
         name: user.name,
         campus: user.campus,
-        baseRating: user.rating || 5,
         miniCount,
         mainCount,
         score

@@ -153,7 +153,7 @@ function DashboardShell({ children }) {
             <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
               <Link
                 href="/dashboard"
-                className={`px-4 py-2 rounded-xl transition-all ${
+                className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
                   isActive("/dashboard") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
                 }`}
               >
@@ -161,7 +161,7 @@ function DashboardShell({ children }) {
               </Link>
               <Link
                 href="/dashboard/problems"
-                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
                   isActive("/dashboard/problems") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
                 }`}
               >
@@ -171,7 +171,7 @@ function DashboardShell({ children }) {
               {user.teamId ? (
                 <Link
                   href="/dashboard/team"
-                  className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
+                  className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
                     isActive("/dashboard/team") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -180,7 +180,7 @@ function DashboardShell({ children }) {
               ) : (
                 <Link
                   href="/dashboard/team/build"
-                  className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
+                  className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
                     isActive("/dashboard/team/build") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -190,7 +190,7 @@ function DashboardShell({ children }) {
 
               <Link
                 href="/dashboard/status"
-                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
                   isActive("/dashboard/status") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
                 }`}
               >
@@ -199,7 +199,7 @@ function DashboardShell({ children }) {
 
               <Link
                 href="/dashboard/resume"
-                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
                   isActive("/dashboard/resume") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
                 }`}
               >
@@ -209,7 +209,7 @@ function DashboardShell({ children }) {
               {user.role === "Admin" && (
                 <Link
                   href="/dashboard/admin"
-                  className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all ${
+                  className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
                     isActive("/dashboard/admin") ? "bg-white/5 text-emerald-400" : "text-gray-400 hover:text-white"
                   }`}
                 >
