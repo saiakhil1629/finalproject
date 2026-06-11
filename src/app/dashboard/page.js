@@ -208,7 +208,7 @@ export default function Dashboard() {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleMiniSubmit} className="space-y-4">
+              <form onSubmit={handleMiniSubmit} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} className="space-y-4">
                 <p className="text-gray-400 text-sm mb-4">
                   Please submit your link to the GitHub repository and upload a screenshot of your working project.
                 </p>
@@ -303,7 +303,7 @@ export default function Dashboard() {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleMainSubmit} className="space-y-4">
+              <form onSubmit={handleMainSubmit} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} className="space-y-4">
                 <p className="text-gray-400 text-sm mb-4">
                   As the Team Lead, submit the main project GitHub link and final output screenshot for the entire team.
                 </p>
