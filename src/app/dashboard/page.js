@@ -215,7 +215,7 @@ export default function Dashboard() {
 
               {/* Show submission form if under 2 projects */}
               {submissions.miniProjects.length < 2 && (
-                <form onSubmit={handleMiniSubmit} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} className="space-y-4 mt-4">
+                <form onSubmit={handleMiniSubmit} className="space-y-4 mt-4">
                   <div className="text-center mb-4">
                     <span className="text-xs bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20">
                       Submission {submissions.miniProjects.length + 1} of 2
@@ -275,7 +275,7 @@ export default function Dashboard() {
                   <button
                     type="submit"
                     disabled={miniStatus.loading}
-                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/10 active:scale-98"
+                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/10 active:scale-98 cursor-pointer disabled:cursor-not-allowed"
                   >
                     {miniStatus.loading ? "Submitting..." : `Submit Mini Project ${submissions.miniProjects.length + 1}`}
                   </button>
@@ -316,7 +316,7 @@ export default function Dashboard() {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleMainSubmit} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} className="space-y-4">
+              <form onSubmit={handleMainSubmit} className="space-y-4">
                 <p className="text-gray-400 text-sm mb-4">
                   As the Team Lead, submit the main project GitHub link and final output screenshot for the entire team.
                 </p>
@@ -371,7 +371,7 @@ export default function Dashboard() {
                 <button
                   type="submit"
                   disabled={mainStatus.loading}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/10 active:scale-98"
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/10 active:scale-98 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {mainStatus.loading ? "Submitting..." : "Submit Main Project"}
                 </button>
