@@ -14,7 +14,7 @@ export async function GET(req) {
     // Select user details and perform a join on the 'teams' table
     const { data: user, error } = await supabase
       .from("users")
-      .select("*, teamId:teams(*)")
+      .select("*, teamId:teams!team_id(*)")
       .eq("id", decoded.userId)
       .maybeSingle();
 

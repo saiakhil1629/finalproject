@@ -28,7 +28,7 @@ export async function GET(req) {
     // Fetch all users (excluding Admin)
     const { data: dbStudents, error: studentsError } = await supabase
       .from("users")
-      .select("*, teamId:teams(*)")
+      .select("*, teamId:teams!team_id(*)")
       .neq("role", "Admin")
       .order("created_at", { ascending: false });
 
@@ -37,7 +37,7 @@ export async function GET(req) {
     // Fetch all teams and their leads
     const { data: dbTeams, error: teamsError } = await supabase
       .from("teams")
-      .select("*, lead:users(*)")
+      .select("*, lead:users!lead_id(*)")
       .order("created_at", { ascending: false });
 
     if (teamsError) throw teamsError;
