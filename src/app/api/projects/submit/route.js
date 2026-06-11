@@ -105,11 +105,14 @@ export async function POST(req) {
       .select()
       .single();
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error("Database Insert Error:", insertError);
+      return NextResponse.json({ error: insertError.message || "Database insert failed" }, { status: 500 });
+    }
 
     return NextResponse.json({ message: `${type} Project submitted successfully!`, project }, { status: 201 });
   } catch (error) {
     console.error("Project Submit Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }
