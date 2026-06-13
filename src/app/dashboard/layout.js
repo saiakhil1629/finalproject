@@ -15,7 +15,7 @@ function NotificationBell() {
   useEffect(() => {
     const fetchStatusAndCheck = async () => {
       try {
-        const res = await fetch("/api/projects/status");
+        const res = await fetch("/api/projects/status", { cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
         if (res.ok) {
           const data = await res.json();
           const previousStateStr = localStorage.getItem("projectStatusState");

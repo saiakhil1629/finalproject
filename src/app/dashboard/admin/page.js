@@ -43,7 +43,7 @@ export default function AdminPanel() {
 
   const fetchAdminData = async () => {
     try {
-      const res = await fetch("/api/admin/data");
+      const res = await fetch("/api/admin/data", { cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -57,7 +57,7 @@ export default function AdminPanel() {
 
   const fetchProblems = async () => {
     try {
-      const res = await fetch("/api/problems");
+      const res = await fetch("/api/problems", { cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
       if (res.ok) {
         const json = await res.json();
         setProblems(json.problems);
@@ -69,7 +69,7 @@ export default function AdminPanel() {
 
   const fetchLinkedinPosts = async () => {
     try {
-      const res = await fetch("/api/admin/linkedin");
+      const res = await fetch("/api/admin/linkedin", { cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
       if (res.ok) {
         const json = await res.json();
         setLinkedinPosts(json.posts || []);

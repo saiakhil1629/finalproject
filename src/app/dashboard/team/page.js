@@ -67,7 +67,7 @@ export default function TeamDetails() {
         setErrorMsg(data.error || "Failed to select problem");
       } else {
         // Refresh team data to show selected problem
-        const teamRes = await fetch("/api/team/members");
+        const teamRes = await fetch("/api/team/members", { cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
         if (teamRes.ok) {
           const teamData = await teamRes.json();
           setTeam(teamData.team);

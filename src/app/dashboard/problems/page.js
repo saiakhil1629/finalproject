@@ -37,7 +37,7 @@ export default function ProblemStatements() {
   useEffect(() => {
     const fetchProblems = async () => {
       try {
-        const res = await fetch("/api/problems");
+        const res = await fetch("/api/problems", { cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
         if (res.ok) {
           const data = await res.json();
           setProblems(data.problems);
