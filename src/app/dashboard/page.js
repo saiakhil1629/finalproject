@@ -29,7 +29,7 @@ export default function Dashboard() {
 
   const fetchSubmissions = async () => {
     try {
-      const res = await fetch("/api/projects/status");
+      const res = await fetch("/api/projects/status", { cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
       if (res.ok) {
         const data = await res.json();
         setSubmissions(data);

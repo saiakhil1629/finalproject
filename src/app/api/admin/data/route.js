@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function verifyAdmin(req) {
   const token = req.cookies.get("token")?.value;
   if (!token) return false;
