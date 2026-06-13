@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
-import { FaTrash, FaPlus, FaUsers, FaUserGraduate, FaFileCode, FaLightbulb, FaEye, FaSearch, FaTimes } from "react-icons/fa";
+import { FaTrash, FaPlus, FaUsers, FaUserGraduate, FaFileCode, FaLightbulb, FaEye, FaSearch, FaTimes, FaLinkedin, FaStar } from "react-icons/fa";
 
 export default function AdminPanel() {
   const { user } = useUser();
@@ -12,6 +12,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("problems"); // problems, students, teams, submissions
   const [data, setData] = useState({ students: [], teams: [], projects: [] });
   const [problems, setProblems] = useState([]);
+  const [linkedinPosts, setLinkedinPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -37,6 +38,7 @@ export default function AdminPanel() {
 
     fetchAdminData();
     fetchProblems();
+    fetchLinkedinPosts();
   }, [user, router]);
 
   const fetchAdminData = async () => {
@@ -59,6 +61,18 @@ export default function AdminPanel() {
       if (res.ok) {
         const json = await res.json();
         setProblems(json.problems);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchLinkedinPosts = async () => {
+    try {
+      const res = await fetch("/api/admin/linkedin");
+      if (res.ok) {
+        const json = await res.json();
+        setLinkedinPosts(json.posts || []);
       }
     } catch (err) {
       console.error(err);
@@ -189,6 +203,26 @@ export default function AdminPanel() {
     }
   };
 
+  const handleLinkedinReview = async (postId, userId, score) => {
+    try {
+      const res = await fetch("/api/admin/linkedin/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, userId, score }),
+      });
+      if (res.ok) {
+        setSuccess("LinkedIn post reviewed and score added successfully!");
+        fetchLinkedinPosts();
+        fetchAdminData(); // Refresh overall data
+      } else {
+        const json = await res.json();
+        setError(json.error || "Failed to review LinkedIn post.");
+      }
+    } catch (err) {
+      setError("Error reviewing LinkedIn post.");
+    }
+  };
+
   // Filter functions
   const filteredStudents = data.students.filter(
     (student) =>
@@ -269,6 +303,7 @@ export default function AdminPanel() {
           { id: "students", label: "Students", icon: FaUserGraduate },
           { id: "teams", label: "Teams", icon: FaUsers },
           { id: "submissions", label: "Submissions", icon: FaFileCode },
+          { id: "linkedin", label: "LinkedIn Reviews", icon: FaLinkedin },
         ].map((tab) => {
           const Icon = tab.icon;
           return (
@@ -523,6 +558,65 @@ export default function AdminPanel() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT: LINKEDIN REVIEWS */}
+      {activeTab === "linkedin" && (
+        <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+          {linkedinPosts.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">
+              <FaLinkedin className="text-4xl mx-auto mb-3 opacity-50" />
+              <p>No pending LinkedIn posts to review.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-white/5 text-gray-400 font-semibold border-b border-white/5 uppercase text-xs">
+                  <tr>
+                    <th className="px-6 py-4">Student</th>
+                    <th className="px-6 py-4">Campus</th>
+                    <th className="px-6 py-4">LinkedIn Post Link</th>
+                    <th className="px-6 py-4">Submitted At</th>
+                    <th className="px-6 py-4 text-center">Score & Review</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {linkedinPosts.map((post) => (
+                    <tr key={post.id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4 font-bold text-white">
+                        {post.user?.name}
+                        <span className="block text-xs font-normal text-gray-500 font-mono mt-0.5">{post.user?.suc_number}</span>
+                      </td>
+                      <td className="px-6 py-4 text-emerald-400">{post.user?.campus}</td>
+                      <td className="px-6 py-4">
+                        <a href={post.link} target="_blank" rel="noopener noreferrer" className="text-[#3b8fd9] hover:underline break-all font-semibold flex items-center gap-1.5">
+                          <FaLinkedin /> View Post
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 text-gray-400">
+                        {new Date(post.created_at).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              onClick={() => handleLinkedinReview(post.id, post.user.id, star)}
+                              title={`Award ${star} stars`}
+                              className="text-gray-600 hover:text-amber-400 hover:scale-110 transition-all cursor-pointer"
+                            >
+                              <FaStar className="text-lg" />
+                            </button>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

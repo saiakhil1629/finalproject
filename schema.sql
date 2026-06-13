@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
     rating INTEGER DEFAULT 5,
     role TEXT DEFAULT 'None',
     team_id UUID,
+    linkedin_score INTEGER DEFAULT 0,
+    linkedin_submission_count INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -49,5 +51,13 @@ CREATE TABLE IF NOT EXISTS problem_statements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     description TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 6. Create linkedin_posts table
+CREATE TABLE IF NOT EXISTS linkedin_posts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    link TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

@@ -17,6 +17,10 @@ export default function Dashboard() {
   
   const [miniStatus, setMiniStatus] = useState({ loading: false, success: "", error: "" });
   const [mainStatus, setMainStatus] = useState({ loading: false, success: "", error: "" });
+  
+  // LinkedIn Form
+  const [linkedinForm, setLinkedinForm] = useState({ link: "" });
+  const [linkedinStatus, setLinkedinStatus] = useState({ loading: false, success: "", error: "" });
 
   // Edit forms state
   const [editingProject, setEditingProject] = useState(null);
@@ -160,6 +164,35 @@ export default function Dashboard() {
     }
   };
 
+  const handleLinkedinSubmit = async (e) => {
+    e.preventDefault();
+    if (!linkedinForm.link) {
+      setLinkedinStatus({ ...linkedinStatus, error: "Please enter a LinkedIn post link." });
+      return;
+    }
+
+    setLinkedinStatus({ loading: true, error: "", success: "" });
+    try {
+      const res = await fetch("/api/linkedin/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ link: linkedinForm.link }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Submission failed");
+
+      setLinkedinStatus({ loading: false, success: "LinkedIn post submitted for review!", error: "" });
+      setLinkedinForm({ link: "" });
+      fetchSubmissions();
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => setLinkedinStatus(prev => ({ ...prev, success: "" })), 5000);
+    } catch (err) {
+      setLinkedinStatus({ loading: false, error: err.message, success: "" });
+    }
+  };
+
   const openEditModal = (project) => {
     setEditingProject(project);
     setEditForm({
@@ -232,9 +265,70 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* LEADERBOARD (LEFT SIDE) */}
-        <div className="lg:col-span-4 h-full">
-          <LeaderboardWidget />
+        {/* LEADERBOARD & LINKEDIN (LEFT SIDE) */}
+        <div className="lg:col-span-4 flex flex-col gap-8 h-full">
+          <div className="flex-1 min-h-[400px]">
+            <LeaderboardWidget />
+          </div>
+
+          {/* LINKEDIN BONUS SECTION */}
+          <div className="glass-panel p-6 rounded-3xl border border-white/5 card-3d">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <span className="text-[#0a66c2] bg-white rounded-sm px-1">in</span> Bonus Points
+              </h2>
+              {submissions.linkedin && (
+                <span className="text-xs bg-[#0a66c2]/10 border border-[#0a66c2]/20 px-2.5 py-1 rounded-full text-[#3b8fd9] font-medium">
+                  {submissions.linkedin.submissionCount} / 5 Used
+                </span>
+              )}
+            </div>
+            
+            {submissions.linkedin && submissions.linkedin.score > 0 && (
+              <div className="mb-4 bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl flex items-center justify-between">
+                <span className="text-sm text-amber-200/80">Bonus Score Added:</span>
+                <span className="font-bold text-amber-400">+{submissions.linkedin.score} ★</span>
+              </div>
+            )}
+
+            <p className="text-gray-400 text-xs mb-4">
+              Submit your LinkedIn post links talking about your projects to earn extra leaderboard stars after admin review! Limit 5 posts per student.
+            </p>
+
+            <form onSubmit={handleLinkedinSubmit} className="space-y-3">
+              <div className="relative">
+                <input
+                  type="url"
+                  placeholder="Paste LinkedIn post URL..."
+                  value={linkedinForm.link}
+                  onChange={(e) => setLinkedinForm({ link: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#0a66c2]/50 transition-all text-sm"
+                  disabled={submissions.linkedin?.submissionCount >= 5}
+                  required
+                />
+              </div>
+
+              {linkedinStatus.error && (
+                <p className="text-red-400 text-xs flex items-center gap-1">
+                  <FaExclamationCircle /> {linkedinStatus.error}
+                </p>
+              )}
+              {linkedinStatus.success && (
+                <p className="text-emerald-400 text-xs flex items-center gap-1">
+                  <FaCheckCircle /> {linkedinStatus.success}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={linkedinStatus.loading || submissions.linkedin?.submissionCount >= 5}
+                className="w-full py-2.5 bg-[#0a66c2] hover:bg-[#004182] text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-[#0a66c2]/20 active:scale-98 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {linkedinStatus.loading ? "Submitting..." : 
+                 submissions.linkedin?.submissionCount >= 5 ? "Limit Reached" : "Submit Link"}
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* SUBMISSION FORMS (RIGHT SIDE) */}

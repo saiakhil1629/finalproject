@@ -14,7 +14,7 @@ export async function GET(req) {
     // Get user details
     const { data: user, error: userError } = await supabase
       .from("users")
-      .select("id, team_id")
+      .select("id, team_id, linkedin_submission_count, linkedin_score")
       .eq("id", decoded.userId)
       .single();
 
@@ -60,7 +60,14 @@ export async function GET(req) {
       adminComment: mainDb.admin_comment || ""
     } : null;
 
-    return NextResponse.json({ miniProjects, mainProject });
+    return NextResponse.json({ 
+      miniProjects, 
+      mainProject,
+      linkedin: {
+        score: user.linkedin_score || 0,
+        submissionCount: user.linkedin_submission_count || 0
+      }
+    });
   } catch (error) {
     console.error("Project status error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

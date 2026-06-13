@@ -8,7 +8,7 @@ export async function GET() {
     // Fetch users and their projects to calculate score
     const { data: users, error } = await supabase
       .from("users")
-      .select("id, name, campus, rating, projects(id, type, status)");
+      .select("id, name, campus, rating, linkedin_score, projects(id, type, status)");
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -28,8 +28,8 @@ export async function GET() {
         });
       }
 
-      // Calculation: Mini = 10, Main = 20
-      const score = (miniCount * 10) + (mainCount * 20);
+      // Calculation: Mini = 10, Main = 20, LinkedIn Score = linkedin_score
+      const score = (miniCount * 10) + (mainCount * 20) + (user.linkedin_score || 0);
       
       return {
         id: user.id,
@@ -37,6 +37,7 @@ export async function GET() {
         campus: user.campus,
         miniCount,
         mainCount,
+        linkedinScore: user.linkedin_score || 0,
         score
       };
     });
