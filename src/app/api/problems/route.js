@@ -19,8 +19,25 @@ async function verifyAdmin(req) {
   }
 }
 
-export async function GET() {
+export async function GET(req) {
   try {
+    const token = req.cookies.get("token")?.value;
+    let userCampus = null;
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const { data: user } = await supabase
+          .from("users")
+          .select("campus")
+          .eq("id", decoded.userId)
+          .single();
+        if (user) userCampus = user.campus;
+      } catch (e) {
+        // Ignored
+      }
+    }
+
     const { data: problems, error } = await supabase
       .from("problem_statements")
       .select("*")
@@ -28,12 +45,38 @@ export async function GET() {
 
     if (error) throw error;
 
+    let takenProblemIds = new Set();
+
+    if (userCampus) {
+      // Find all teams that have selected a problem statement in the same campus
+      const { data: campusUsers } = await supabase
+        .from("users")
+        .select("team_id")
+        .eq("campus", userCampus)
+        .not("team_id", "is", null);
+
+      if (campusUsers && campusUsers.length > 0) {
+        const teamIdsInCampus = [...new Set(campusUsers.map(u => u.team_id))];
+        
+        const { data: teamsWithProblems } = await supabase
+          .from("teams")
+          .select("problem_statement_id")
+          .in("id", teamIdsInCampus)
+          .not("problem_statement_id", "is", null);
+
+        if (teamsWithProblems) {
+          teamsWithProblems.forEach(t => takenProblemIds.add(t.problem_statement_id));
+        }
+      }
+    }
+
     // Map database keys to frontend (_id)
     const formattedProblems = problems.map(p => ({
       _id: p.id,
       title: p.title,
       description: p.description,
-      createdAt: p.created_at
+      createdAt: p.created_at,
+      isTakenInCampus: takenProblemIds.has(p.id)
     }));
 
     return NextResponse.json({ problems: formattedProblems });

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS teams (
     lead_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     join_code TEXT UNIQUE NOT NULL,
     max_size INTEGER NOT NULL DEFAULT 5,
+    problem_statement_id UUID REFERENCES problem_statements(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

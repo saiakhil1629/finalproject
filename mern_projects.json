@@ -1,0 +1,90 @@
+[
+  {
+    "title": "AI-Powered Mock Interview Platform",
+    "description": "An interactive AI mock interview platform for web developers.\n\nKey Features & Requirements:\n- User Audio Processing: Record answers in React using Web Speech API or MediaRecorder.\n- AI Evaluator: Send voice transcripts to Gemini API along with technical questions.\n- Feedback Loop: Generate scores, highlight grammatical/conceptual errors, and provide sample answers.\n- Dashboard: Keep track of user progress, score histories, and weakness analysis.\n\nTech Stack Details:\n- Frontend: React.js, Tailwind CSS, Web Speech API (Speech-to-Text).\n- Backend: Node.js, Express.js, MongoDB (user sessions and scores).\n- Integration: Gemini AI API for interview assessment and rating."
+  },
+  {
+    "title": "Multi-Vendor E-Commerce Hub with Live Bidding",
+    "description": "A dynamic e-commerce system featuring multi-vendor registration and a real-time auction room.\n\nKey Features & Requirements:\n- Multi-Vendor Role Setup: Vendors can upload, delete, and modify products and track orders.\n- Bidding Arena: Live item bidding section using Socket.io for active bidding state synchronization.\n- Payments: Mock/Live payment flows utilizing Stripe SDK.\n- Search & Filtration: Full-text search with nested filtering (price, category, ratings).\n\nTech Stack Details:\n- Frontend: React.js, Redux Toolkit, Socket.io-client.\n- Backend: Express.js, Node.js, MongoDB (Schema: Users, Products, Bids, Orders).\n- Integration: Stripe API for processing payment checkouts."
+  },
+  {
+    "title": "Collaborative Kanban Project Management Suite",
+    "description": "A team project management app similar to Trello and Jira.\n\nKey Features & Requirements:\n- Kanban Workspace: Drag-and-drop task items between columns (To Do, In Progress, Review, Done).\n- Real-Time Updates: Multiple users on the same project see movements in real-time.\n- Team Roles: Workspace administrators, managers, and collaborators.\n- Analytics: Burndown charts and tasks allocation visual progress tracking.\n\nTech Stack Details:\n- Frontend: React.js, Tailwind CSS, react-beautiful-dnd (or @hello-pangea/dnd), Socket.io-client.\n- Backend: Node.js, Express.js, MongoDB, Socket.io.\n- Integration: Recharts or Chart.js for task completion statistics."
+  },
+  {
+    "title": "IoT Smart Home & Energy Monitoring Dashboard",
+    "description": "A central control panel to monitor smart devices and visualize electrical energy usage.\n\nKey Features & Requirements:\n- Virtual Device Simulation: Control virtual smart hubs (thermostats, bulbs, cameras) in real-time.\n- Energy Analytics: Interactive energy consumption dashboards (daily, weekly, monthly logs).\n- Action Scheduler: Setup timers and rules (e.g., Turn off AC at 10 PM).\n- Alerts: In-app notifications for abnormal voltage fluctuations or high energy consumption.\n\nTech Stack Details:\n- Frontend: React.js, Tailwind CSS, Recharts for charts.\n- Backend: Node.js, Express.js, MongoDB (storing device states and metrics history).\n- Integration: Node-Cron for scheduled automation checks."
+  },
+  {
+    "title": "Telehealth Consultation & Patient Portal",
+    "description": "A secure web portal connecting certified doctors with patients.\n\nKey Features & Requirements:\n- Consultation Schedulers: Doctors update their availability; patients book appointment slots.\n- Live Teleconsultation: Integrated peer-to-peer audio/video calling.\n- Prescriptions: Digital prescription builder allowing doctors to export sign-verified PDFs.\n- Records Vault: Encrypted upload portal for medical records and test reports.\n\nTech Stack Details:\n- Frontend: React.js, WebRTC APIs (or Simple-Peer), Tailwind CSS.\n- Backend: Node.js, Express.js, MongoDB, Socket.io (for signaling server).\n- Integration: PDFKit or pdfmake for prescription generation, Cloudinary for reports storage."
+  },
+  {
+    "title": "Interactive Learning Management System (LMS)",
+    "description": "A course creation and student learning application like Udemy.\n\nKey Features & Requirements:\n- Instructor Portal: Custom course creator, video lessons uploader, and quiz builder.\n- Player Interface: Seamless video lessons progress tracking and interactive comments.\n- Assessment: Auto-graded multiple-choice quizzes and programming assignment submittals.\n- Certificates: Automatic PDF certificate generation upon course completion.\n\nTech Stack Details:\n- Frontend: React.js, Redux, Video.js player integration.\n- Backend: Express.js, Node.js, MongoDB (courses, quizzes, user progress records).\n- Integration: AWS S3 or Cloudinary for secure video storage and streaming."
+  },
+  {
+    "title": "Cryptocurrency Portfolio Tracker & Live Paper Trading",
+    "description": "A financial trading simulation platform matching real-time market data.\n\nKey Features & Requirements:\n- Asset Tracker: Search coins, view live prices, and visualize historical line graphs.\n- Paper Simulator: Execute virtual buy/sell trades with mock currency balance.\n- Portfolio Ledger: Dynamic statistics showing total net profit/loss calculations.\n- Price Alerts: Web socket price tracking triggering email notifications.\n\nTech Stack Details:\n- Frontend: React.js, Recharts, Tailwind CSS.\n- Backend: Node.js, Express.js, MongoDB (user wallets, transaction history).\n- Integration: CoinGecko API or Binance API, Nodemailer for alert emails."
+  },
+  {
+    "title": "Real-time Collaborative Code Editor & Sandbox Compiler",
+    "description": "An online pair-programming workspace (similar to CodePen or Repl.it).\n\nKey Features & Requirements:\n- Editor Sandbox: Rich syntax highlighting editor (Monaco Editor) supporting HTML, CSS, JS, Python.\n- Real-time Cursor Tracking: Socket.io integration to display multiple user cursors and changes.\n- Compiler Sandbox: Submit code snippets to a compiler server for live evaluation.\n- Live View: Live iframe rendering container for web-design code.\n\nTech Stack Details:\n- Frontend: React.js, @monaco-editor/react, Socket.io-client.\n- Backend: Node.js, Express.js, MongoDB, Socket.io.\n- Integration: Judge0 API or third-party sandboxed execution runner."
+  },
+  {
+    "title": "Smart Expense Tracker & Financial Planner",
+    "description": "A finance application to auto-analyze personal expenses and forecast budgets.\n\nKey Features & Requirements:\n- Expense Ledger: Add expenses, attach receipt snapshots, and categorize transactions.\n- Smart Budgets: Set monthly spending limits per category with progress warning bars.\n- Financial Auditor: Export transaction sheets into PDF invoices or CSV spreadsheets.\n- Recurring Schedulers: Add subscription expenses that register automatically each month.\n\nTech Stack Details:\n- Frontend: React.js, Tailwind CSS, Chart.js.\n- Backend: Express.js, Node.js, MongoDB (receipt URLs, category collections).\n- Integration: Multer & Cloudinary for receipts, json2csv/pdfkit for exporting files."
+  },
+  {
+    "title": "Real Estate Rental & Property Aggregator",
+    "description": "A platform connecting property owners directly with potential tenants.\n\nKey Features & Requirements:\n- Interactive Locator: Display listed properties on an interactive map.\n- Media Walkthroughs: Upload and navigate property image galleries and walkthrough feeds.\n- Live Chat: Built-in messenger connecting tenants with property owners directly.\n- Agreement Generator: Customizable digital leasing agreements with signature inputs.\n\nTech Stack Details:\n- Frontend: React.js, Leaflet.js/Google Maps, Socket.io-client.\n- Backend: Node.js, Express.js, MongoDB (Users, Listings, Chats).\n- Integration: Socket.io for immediate real-time messaging, Canvas for digital sign."
+  },
+  {
+    "title": "Restaurant QR-Code Menu & Kitchen Dashboard",
+    "description": "A contactless, digital dining solution for restaurants.\n\nKey Features & Requirements:\n- Table QR Generator: Unique QR codes per table that automatically open the digital menu on scan.\n- Digital Ordering Cart: Add items, modify options, and place orders directly.\n- Chef Interface: Live queue showing pending, cooking, and completed food items.\n- UPI Payments: Checkout interface simulating bill sharing and UPI payment gateways.\n\nTech Stack Details:\n- Frontend: React.js, Tailwind CSS, Socket.io-client.\n- Backend: Node.js, Express.js, MongoDB (Tables, Menu items, Active Orders).\n- Integration: qrcode generator package, Socket.io for real-time kitchen syncing."
+  },
+  {
+    "title": "Logistics & Supply Chain Shipment Tracker",
+    "description": "A logistics solution to track shipments, delivery staff, and routes.\n\nKey Features & Requirements:\n- Stepper Progress Bar: Visual progress of packages (Created, In-Transit, Out-for-Delivery, Delivered).\n- Interactive Delivery Map: Map interface tracing routes from depot to delivery address.\n- Dispatch System: Admin logs packages, selects delivery drivers, and reviews delays.\n- Sign-Off: Courier uploads delivery proof (signature + photo).\n\nTech Stack Details:\n- Frontend: React.js, Tailwind CSS, Leaflet.js.\n- Backend: Node.js, Express.js, MongoDB (Shipments database collection).\n- Integration: Cloudinary (for proof upload), React Signature Canvas."
+  },
+  {
+    "title": "Social Community Platform for Developers",
+    "description": "A blogging, discussion, and content networking hub like Dev.to.\n\nKey Features & Requirements:\n- Article Composer: Markdown-supported draft compiler and content editor.\n- Thread discussions: Nested comment threads, upvotes, and topic tagging.\n- Community Forums: Dedicated boards for different domains (React, Node, AI, Databases).\n- Badges: System rewards user ratings and contributions with gamified profile badges.\n\nTech Stack Details:\n- Frontend: React.js, React-Markdown, Tailwind CSS.\n- Backend: Node.js, Express.js, MongoDB (complex nested queries for comments).\n- Integration: JWT authentication, markdown parsers."
+  },
+  {
+    "title": "Corporate Event Booking & QR Ticketing App",
+    "description": "An event management, seat allocation, and digital ticketing engine.\n\nKey Features & Requirements:\n- Ticket Booking: Select event, view seating plan, and purchase entry passes.\n- QR Ticket Generator: Generates a PDF containing custom event details and a secure verification QR code.\n- Checking Agent Dashboard: Scanner app UI for event gates to scan and check-in attendees.\n- Event Metrics: Dashboard presenting ticket sales, gross revenue, and check-in ratios.\n\nTech Stack Details:\n- Frontend: React.js, HTML5-Qrcode library, Chart.js.\n- Backend: Node.js, Express.js, MongoDB (Events, Tickets database).\n- Integration: Stripe API, qr-image generation, PDFKit."
+  },
+  {
+    "title": "Secure Cloud Password Vault & Strength Auditor",
+    "description": "A cloud password manager tool using advanced encryption strategies.\n\nKey Features & Requirements:\n- Encrypted Storage: Cryptographically hashes and encrypts usernames and passwords in the client.\n- Security Auditor: Warns on duplicate passwords and flags weak/breached credentials.\n- Password Generator: Customizable, high-entropy password generator interface.\n- Multi-factor Auth (MFA): Login protection via email OTP validation.\n\nTech Stack Details:\n- Frontend: React.js, Crypto-JS (client-side AES encryption/decryption).\n- Backend: Node.js, Express.js, MongoDB (storing base64 encrypted payloads).\n- Integration: Nodemailer (for 2FA authentication validation codes)."
+  },
+  {
+    "title": "Crowdfunding and Social Donation Portal",
+    "description": "A platform to pitch charity projects and raise funds like GoFundMe.\n\nKey Features & Requirements:\n- Pitch Creator: Build and post campaigns with descriptions, target goals, and images.\n- Milestones Stepper: Charts and progress tracking bars reflecting donation stats.\n- Rewards Tiers: Dynamic reward packages configured per donation price range.\n- Feedbacks: Support message wall where donors leave comments and reactions.\n\nTech Stack Details:\n- Frontend: React.js, Tailwind CSS, Recharts.\n- Backend: Node.js, Express.js, MongoDB (Campaigns, Donations, Users).\n- Integration: Stripe API for credit card payments."
+  },
+  {
+    "title": "Vehicle Rental & Ride Hailing Simulator",
+    "description": "A booking system for vehicle rental fleets or dynamic rides.\n\nKey Features & Requirements:\n- Booking Engine: Rent cars/bikes by day/hour or select drop-off locations.\n- Live Simulation: Simulates vehicle movement on a leaflet map toward the destination.\n- Pricing Engine: Dynamic fare calculations taking distance, vehicle class, and peak times.\n- Feedback Portal: Double-sided feedback logging reviews for both drivers and riders.\n\nTech Stack Details:\n- Frontend: React.js, Leaflet.js maps, Tailwind CSS.\n- Backend: Node.js, Express.js, MongoDB (Vehicle status collections, bookings).\n- Integration: Turf.js for geographical calculations."
+  },
+  {
+    "title": "Digital Fitness Planner & Nutrition Coach",
+    "description": "A comprehensive daily log for workouts, exercises, and dietary tracking.\n\nKey Features & Requirements:\n- Workout Planner: Select and save workout routines from categorized libraries.\n- Calorie Intake Log: Log meals and fetch detailed nutritional stats (carbs, proteins, fats).\n- Tracker Dashboard: Visualize workout streaks and weight progress history.\n- Water Tracker: Track intake limits with reminders.\n\nTech Stack Details:\n- Frontend: React.js, Redux Toolkit, Recharts.\n- Backend: Node.js, Express.js, MongoDB (user logs, workout plans).\n- Integration: USDA Nutrition Database API or Nutritionix API."
+  },
+  {
+    "title": "Automated Hotel Booking & Room Service Portal",
+    "description": "An administration engine for hotel reservation operations and room service requests.\n\nKey Features & Requirements:\n- Room Booker: Check room availability, preview pictures, choose options, and pay bills.\n- Room Service App: Guests order room service items or request cleaning.\n- Service Board: Kitchen and housekeeping personnel receive requests in real-time.\n- Occupancy Chart: Calendar views and charts showing room statuses for hotel admins.\n\nTech Stack Details:\n- Frontend: React.js, Tailwind CSS, Socket.io-client.\n- Backend: Node.js, Express.js, MongoDB, Socket.io.\n- Integration: FullCalendar library, Stripe API."
+  },
+  {
+    "title": "Secure Document Signing & Workspace Agreements",
+    "description": "A document collaboration platform like DocuSign.\n\nKey Features & Requirements:\n- Sign Pad: Interactive canvas allowing users to draw and save signatures.\n- Document Manager: Upload PDF contracts and specify signature locations.\n- Invitations Flow: Email contracts to target receivers with active signing tokens.\n- Secure Archive: Keeps logs of completed contracts with immutable tamper audits.\n\nTech Stack Details:\n- Frontend: React.js, React-Signature-Canvas, Tailwind CSS.\n- Backend: Node.js, Express.js, MongoDB (signed file hashes, user documents).\n- Integration: Nodemailer (invitations), PDF-lib (manipulating PDFs on-the-fly)."
+  },
+  {
+    "title": "Personalized Subscription & Video OTT Dashboard",
+    "description": "A media video streaming and subscription manager dashboard.\n\nKey Features & Requirements:\n- Video Player: Smooth streaming layout supporting pause, forward, and playback speeds.\n- Subscriptions Portal: Manage subscription tiers (Free, Premium, VIP) and payment details.\n- Watch History: Track viewing status and suggest customized recommendations.\n- Interactive Watchlist: Add and remove items from queue.\n\nTech Stack Details:\n- Frontend: React.js, VideoJS, Tailwind CSS.\n- Backend: Node.js, Express.js, MongoDB (videos collection, watch histories).\n- Integration: Stripe API for subscription plans."
+  },
+  {
+    "title": "Interactive Event Networking & Matchmaking App",
+    "description": "A matchmaking platform designed for event and professional conferences.\n\nKey Features & Requirements:\n- Profile Matcher: User defines skills and interests; matcher lists compatible profiles.\n- Direct Networking: Connect, exchange digital business cards, and chat.\n- Meeting Planner: Schedule and confirm brief 1-on-1 calls.\n- Peer Video: Instant WebRTC calling inside chats.\n\nTech Stack Details:\n- Frontend: React.js, WebRTC, Tailwind CSS.\n- Backend: Node.js, Express.js, MongoDB (Matches, chats, events database).\n- Integration: Socket.io for direct chat and signaling server."
+  }
+]

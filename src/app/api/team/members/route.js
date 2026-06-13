@@ -25,7 +25,7 @@ export async function GET(req) {
     // Get team details
     const { data: team, error: teamError } = await supabase
       .from("teams")
-      .select("*")
+      .select("*, problem_statements(id, title, description)")
       .eq("id", user.team_id)
       .single();
 
@@ -60,6 +60,11 @@ export async function GET(req) {
       name: team.name,
       joinCode: team.join_code,
       maxSize: team.max_size,
+      problemStatement: team.problem_statements ? {
+        _id: team.problem_statements.id,
+        title: team.problem_statements.title,
+        description: team.problem_statements.description
+      } : null,
       createdAt: team.created_at,
       leadId: { _id: leadUser?._id },
       members: formattedMembers

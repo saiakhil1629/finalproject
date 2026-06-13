@@ -12,6 +12,10 @@ export default function TeamDetails() {
   const [team, setTeam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [problems, setProblems] = useState([]);
+  const [selectedProblemId, setSelectedProblemId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     // If not associated with any team, redirect to build
@@ -20,22 +24,61 @@ export default function TeamDetails() {
       return;
     }
 
-    const fetchTeam = async () => {
+    const fetchTeamAndProblems = async () => {
       try {
-        const res = await fetch("/api/team/members");
-        if (res.ok) {
-          const data = await res.json();
+        const [teamRes, probRes] = await Promise.all([
+          fetch("/api/team/members"),
+          fetch("/api/problems")
+        ]);
+
+        if (teamRes.ok) {
+          const data = await teamRes.json();
           setTeam(data.team);
         }
+        
+        if (probRes.ok) {
+          const pData = await probRes.json();
+          setProblems(pData.problems || []);
+        }
       } catch (err) {
-        console.error("Failed to load team data", err);
+        console.error("Failed to load data", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTeam();
+    fetchTeamAndProblems();
   }, [user, router]);
+
+  const handleSelectProblem = async () => {
+    if (!selectedProblemId) return;
+    setSubmitting(true);
+    setErrorMsg("");
+
+    try {
+      const res = await fetch("/api/team/select-problem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ problemId: selectedProblemId })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setErrorMsg(data.error || "Failed to select problem");
+      } else {
+        // Refresh team data to show selected problem
+        const teamRes = await fetch("/api/team/members");
+        if (teamRes.ok) {
+          const teamData = await teamRes.json();
+          setTeam(teamData.team);
+        }
+      }
+    } catch (err) {
+      setErrorMsg("An error occurred");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const copyCode = () => {
     if (team) {
@@ -94,6 +137,55 @@ export default function TeamDetails() {
         <span className="text-white font-semibold">
           {team.members.length} / {team.maxSize} Members
         </span>
+      </div>
+
+      {/* Problem Statement Section */}
+      <div className="glass-panel p-6 rounded-2xl border border-white/5">
+        <h2 className="text-xl font-bold text-white mb-4">Problem Statement</h2>
+        
+        {team.problemStatement ? (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl">
+            <h3 className="text-emerald-400 font-bold mb-2">{team.problemStatement.title}</h3>
+            <p className="text-gray-300 text-sm whitespace-pre-wrap">{team.problemStatement.description}</p>
+          </div>
+        ) : team.members.length < team.maxSize ? (
+          <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl text-amber-200/80 text-sm">
+            <p>Your team must be fully built ({team.maxSize} members) before you can select a problem statement.</p>
+          </div>
+        ) : team.leadId._id === user.id ? (
+          <div className="space-y-4">
+            <p className="text-gray-400 text-sm mb-2">Select a problem statement for your team. <strong className="text-amber-400">Note: Projects are exclusive per campus. Once selected, no other team in your campus can choose it.</strong></p>
+            
+            {errorMsg && <div className="text-red-400 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">{errorMsg}</div>}
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <select
+                value={selectedProblemId}
+                onChange={(e) => setSelectedProblemId(e.target.value)}
+                className="flex-1 bg-[#1A1A1A] text-white border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500/50"
+              >
+                <option value="">-- Choose a Problem Statement --</option>
+                {problems.map((p) => (
+                  <option key={p._id} value={p._id} disabled={p.isTakenInCampus}>
+                    {p.title} {p.isTakenInCampus ? "(Already Taken in your Campus)" : ""}
+                  </option>
+                ))}
+              </select>
+              
+              <button
+                onClick={handleSelectProblem}
+                disabled={!selectedProblemId || submitting}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                {submitting ? "Selecting..." : "Confirm Selection"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/5 border border-white/5 p-4 rounded-xl text-gray-400 text-sm">
+            <p>Waiting for the Team Lead to select a problem statement.</p>
+          </div>
+        )}
       </div>
 
       {/* Team Members Profiles List */}
