@@ -13,7 +13,7 @@ export default function LeaderboardWidget() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await fetch("/api/leaderboard");
+        const res = await fetch("/api/leaderboard", { cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
         if (res.ok) {
           const data = await res.json();
           setLeaderboard(data.leaderboard || []);
