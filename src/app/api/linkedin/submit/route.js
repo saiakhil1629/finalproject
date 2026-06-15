@@ -26,10 +26,6 @@ export async function POST(req) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (user.linkedin_submission_count >= 5) {
-      return NextResponse.json({ error: "You have reached the maximum limit of 5 submissions" }, { status: 400 });
-    }
-
     // Insert the post
     const { error: insertError } = await supabase
       .from("linkedin_posts")

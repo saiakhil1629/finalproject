@@ -279,7 +279,7 @@ export default function Dashboard() {
               </h2>
               {submissions.linkedin && (
                 <span className="text-xs bg-[#0a66c2]/10 border border-[#0a66c2]/20 px-2.5 py-1 rounded-full text-[#3b8fd9] font-medium">
-                  {submissions.linkedin.submissionCount} / 5 Used
+                  {submissions.linkedin.submissionCount} Submitted
                 </span>
               )}
             </div>
@@ -292,7 +292,7 @@ export default function Dashboard() {
             )}
 
             <p className="text-gray-400 text-xs mb-4">
-              Submit your LinkedIn post links talking about your projects to earn extra leaderboard stars after admin review! Limit 5 posts per student.
+              Submit your LinkedIn post links talking about your projects to earn extra leaderboard stars after admin review!
             </p>
 
             <form onSubmit={handleLinkedinSubmit} className="space-y-3">
@@ -303,7 +303,6 @@ export default function Dashboard() {
                   value={linkedinForm.link}
                   onChange={(e) => setLinkedinForm({ link: e.target.value })}
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#0a66c2]/50 transition-all text-sm"
-                  disabled={submissions.linkedin?.submissionCount >= 5}
                   required
                 />
               </div>
@@ -321,11 +320,10 @@ export default function Dashboard() {
 
               <button
                 type="submit"
-                disabled={linkedinStatus.loading || submissions.linkedin?.submissionCount >= 5}
+                disabled={linkedinStatus.loading}
                 className="w-full py-2.5 bg-[#0a66c2] hover:bg-[#004182] text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-[#0a66c2]/20 active:scale-98 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {linkedinStatus.loading ? "Submitting..." : 
-                 submissions.linkedin?.submissionCount >= 5 ? "Limit Reached" : "Submit Link"}
+                {linkedinStatus.loading ? "Submitting..." : "Submit Link"}
               </button>
             </form>
           </div>
