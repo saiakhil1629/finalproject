@@ -38,7 +38,7 @@ Keep it encouraging, concise, and highly actionable. Avoid overly dense text; us
   } catch (error) {
     console.error("Gemini API Error:", error);
     return NextResponse.json(
-      { error: "Failed to generate explanation. Please try again later." },
+      { error: "Failed to generate explanation. Details: " + (error.message || error.toString()) },
       { status: 500 }
     );
   }
