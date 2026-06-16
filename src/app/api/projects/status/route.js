@@ -59,6 +59,7 @@ export async function GET(req) {
       _id: mainDb.id,
       githubLink: mainDb.github_link,
       imageUrl: mainDb.image_url,
+      liveLink: mainDb.live_link,
       type: mainDb.type,
       status: mainDb.status || "Pending",
       adminComment: mainDb.admin_comment || ""

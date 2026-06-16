@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
-import { FaTrash, FaPlus, FaUsers, FaUserGraduate, FaFileCode, FaLightbulb, FaEye, FaSearch, FaTimes, FaLinkedin, FaStar } from "react-icons/fa";
+import { FaTrash, FaPlus, FaUsers, FaUserGraduate, FaFileCode, FaLightbulb, FaEye, FaSearch, FaTimes, FaLinkedin, FaStar, FaLink } from "react-icons/fa";
 
 export default function AdminPanel() {
   const { user } = useUser();
@@ -662,9 +662,16 @@ export default function AdminPanel() {
                       {proj.type === "Main" ? proj.teamId?.name || "Deleted Team" : proj.submitterId?.name}
                     </td>
                     <td className="px-6 py-4">
-                      <a href={proj.githubLink} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline break-all font-mono text-xs">
-                        {proj.githubLink}
-                      </a>
+                      <div className="space-y-1.5">
+                        <a href={proj.githubLink} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline break-all font-mono text-xs block">
+                          GitHub: {proj.githubLink}
+                        </a>
+                        {proj.liveLink && (
+                          <a href={proj.liveLink} target="_blank" rel="noopener noreferrer" className="text-[#3b8fd9] hover:underline break-all font-mono text-xs block">
+                            Live: {proj.liveLink}
+                          </a>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-gray-400">{proj.submitterId?.campus}</td>
                     <td className="px-6 py-4">

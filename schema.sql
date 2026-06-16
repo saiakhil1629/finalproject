@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS projects (
     team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
     github_link TEXT NOT NULL,
     image_url TEXT NOT NULL,
+    live_link TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

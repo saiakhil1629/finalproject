@@ -24,7 +24,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { type, githubLink, imageUrl } = await req.json();
+    const { type, githubLink, imageUrl, liveLink } = await req.json();
 
     if (!type || !githubLink || !imageUrl) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -112,6 +112,7 @@ export async function POST(req) {
         team_id: type === "Main" ? user.team_id : null,
         github_link: githubLink,
         image_url: finalImageUrl,
+        live_link: type === "Main" ? (liveLink || null) : null,
       })
       .select()
       .single();
@@ -148,7 +149,7 @@ export async function PUT(req) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { id, githubLink, imageUrl } = await req.json();
+    const { id, githubLink, imageUrl, liveLink } = await req.json();
 
     if (!id || !githubLink || !imageUrl) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -214,6 +215,7 @@ export async function PUT(req) {
       .update({
         github_link: githubLink,
         image_url: finalImageUrl,
+        live_link: project.type === "Main" ? (liveLink || null) : null,
         status: "Pending", // reset status to Pending review
         admin_comment: "", // clear admin comment
       })
