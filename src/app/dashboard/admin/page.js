@@ -14,6 +14,8 @@ export default function AdminPanel() {
   const [problems, setProblems] = useState([]);
   const [linkedinPosts, setLinkedinPosts] = useState([]);
   const [submissionFilter, setSubmissionFilter] = useState("All");
+  const [studentCampusFilter, setStudentCampusFilter] = useState("All");
+  const [submissionCampusFilter, setSubmissionCampusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -244,16 +246,26 @@ export default function AdminPanel() {
     }
   };
 
+  // Derive unique campuses
+  const uniqueStudentCampuses = ["All", ...new Set(data.students.map(s => s.campus).filter(Boolean))];
+  const uniqueSubmissionCampuses = ["All", ...new Set(data.projects.map(p => p.submitterId?.campus).filter(Boolean))];
+
   // Filter functions
   const filteredStudents = data.students.filter(
     (student) =>
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (studentCampusFilter === "All" || student.campus === studentCampusFilter) &&
+      (student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.sucNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.campus.toLowerCase().includes(searchQuery.toLowerCase())
+      student.campus.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const filteredTeams = data.teams.filter((team) =>
     team.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredProjects = data.projects.filter(p => 
+    (submissionFilter === "All" || p.type === submissionFilter) &&
+    (submissionCampusFilter === "All" || p.submitterId?.campus === submissionCampusFilter)
   );
 
   if (loading) {
@@ -412,15 +424,26 @@ export default function AdminPanel() {
       {/* TAB CONTENT: STUDENTS */}
       {activeTab === "students" && (
         <div className="space-y-4">
-          <div className="relative max-w-sm">
-            <FaSearch className="absolute left-4 top-3 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Search by name, SUC or campus..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-2.5 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
-            />
+          <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
+            <div className="relative max-w-sm w-full">
+              <FaSearch className="absolute left-4 top-3 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Search by name, SUC or campus..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-2.5 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
+              />
+            </div>
+            <select
+              value={studentCampusFilter}
+              onChange={(e) => setStudentCampusFilter(e.target.value)}
+              className="bg-white/5 border border-white/5 rounded-xl text-white text-sm px-4 py-2.5 focus:outline-none focus:border-emerald-500/50 cursor-pointer"
+            >
+              {uniqueStudentCampuses.map(campus => (
+                <option key={campus} value={campus} className="bg-emerald-950 text-white">{campus}</option>
+              ))}
+            </select>
           </div>
 
           <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
@@ -523,20 +546,34 @@ export default function AdminPanel() {
       {/* TAB CONTENT: SUBMISSIONS */}
       {activeTab === "submissions" && (
         <div className="space-y-4">
-          <div className="flex gap-2">
-            {["All", "Mini", "Main"].map(type => (
-              <button
-                key={type}
-                onClick={() => setSubmissionFilter(type)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                  submissionFilter === type
-                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                    : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-                }`}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex gap-2">
+              {["All", "Mini", "Main"].map(type => (
+                <button
+                  key={type}
+                  onClick={() => setSubmissionFilter(type)}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                    submissionFilter === type
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                      : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {type} Projects
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-gray-400 text-sm font-semibold">Total: <strong className="text-white">{filteredProjects.length}</strong></span>
+              <select
+                value={submissionCampusFilter}
+                onChange={(e) => setSubmissionCampusFilter(e.target.value)}
+                className="bg-white/5 border border-white/5 rounded-xl text-white text-sm px-4 py-2.5 focus:outline-none focus:border-emerald-500/50 cursor-pointer"
               >
-                {type} Projects
-              </button>
-            ))}
+                {uniqueSubmissionCampuses.map(campus => (
+                  <option key={campus} value={campus} className="bg-emerald-950 text-white">{campus}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
           <div className="overflow-x-auto">
@@ -553,7 +590,7 @@ export default function AdminPanel() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {data.projects.filter(p => submissionFilter === "All" || p.type === submissionFilter).map((proj) => (
+                {filteredProjects.map((proj) => (
                   <tr key={proj._id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
@@ -611,7 +648,11 @@ export default function AdminPanel() {
 
       {/* TAB CONTENT: LINKEDIN REVIEWS */}
       {activeTab === "linkedin" && (
-        <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 text-sm font-semibold">Total Posts Shared: <strong className="text-white">{linkedinPosts.length}</strong></span>
+          </div>
+          <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
           {linkedinPosts.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
               <FaLinkedin className="text-4xl mx-auto mb-3 opacity-50" />
@@ -674,6 +715,7 @@ export default function AdminPanel() {
               </table>
             </div>
           )}
+        </div>
         </div>
       )}
 
