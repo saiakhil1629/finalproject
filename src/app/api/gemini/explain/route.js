@@ -29,10 +29,19 @@ Format your response in Markdown. Include:
 
 Keep it encouraging, concise, and highly actionable. Avoid overly dense text; use formatting (bolding, lists) to make it scannable.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-    });
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+    } catch (err) {
+      console.warn("gemini-2.5-flash failed (likely high demand), falling back to gemini-1.5-flash:", err.message);
+      response = await ai.models.generateContent({
+        model: "gemini-1.5-flash",
+        contents: prompt,
+      });
+    }
 
     return NextResponse.json({ explanation: response.text });
   } catch (error) {
