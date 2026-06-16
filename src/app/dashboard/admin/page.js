@@ -480,6 +480,7 @@ export default function AdminPanel() {
                     <th className="px-6 py-4">Lead</th>
                     <th className="px-6 py-4">Campus</th>
                     <th className="px-6 py-4">Members Count</th>
+                    <th className="px-6 py-4">Problem Statement</th>
                     <th className="px-6 py-4">Actions</th>
                   </tr>
                 </thead>
@@ -492,6 +493,15 @@ export default function AdminPanel() {
                       <td className="px-6 py-4 text-gray-400">{team.leadId?.campus || "N/A"}</td>
                       <td className="px-6 py-4">
                         {team.members.length} / {team.maxSize}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${
+                          team.problemStatement !== "Not Selected" 
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                            : "bg-white/5 text-gray-500 border border-white/5"
+                        }`}>
+                          {team.problemStatement}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <button

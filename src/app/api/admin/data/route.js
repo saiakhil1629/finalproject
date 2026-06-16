@@ -72,6 +72,11 @@ export async function GET(req) {
       .from("users")
       .select("id, name, suc_number, campus, team_id");
 
+    // Fetch problem statements to map to teams
+    const { data: problemStatements } = await supabase
+      .from("problem_statements")
+      .select("id, title");
+
     const teams = dbTeams.map(team => {
       const teamMembers = (dbAllMembers || [])
         .filter(m => m.team_id === team.id)
@@ -82,12 +87,17 @@ export async function GET(req) {
           campus: m.campus
         }));
 
+      const problemTitle = team.problem_statement_id && problemStatements 
+        ? problemStatements.find(p => p.id === team.problem_statement_id)?.title 
+        : "Not Selected";
+
       return {
         _id: team.id,
         name: team.name,
         joinCode: team.join_code,
         maxSize: team.max_size,
         leadId: team.lead ? { _id: team.lead.id, name: team.lead.name, campus: team.lead.campus } : null,
+        problemStatement: problemTitle || "Not Selected",
         members: teamMembers
       };
     });
