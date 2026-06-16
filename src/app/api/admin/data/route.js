@@ -29,13 +29,37 @@ export async function GET(req) {
     }
 
     // Fetch all users (excluding Admin)
-    const { data: dbStudents, error: studentsError } = await supabase
+    let dbStudents = null;
+
+    // Try fallback options due to duplicate foreign key constraints in user DB setup
+    const res1 = await supabase
       .from("users")
-      .select("*, teamId:teams!team_id(*)")
+      .select("*, teamId:teams!fk_users_team_id(*)")
       .neq("role", "Admin")
       .order("created_at", { ascending: false });
 
-    if (studentsError) throw studentsError;
+    if (!res1.error) {
+      dbStudents = res1.data;
+    } else {
+      const res2 = await supabase
+        .from("users")
+        .select("*, teamId:teams!users_team_id_fkey(*)")
+        .neq("role", "Admin")
+        .order("created_at", { ascending: false });
+
+      if (!res2.error) {
+        dbStudents = res2.data;
+      } else {
+        const res3 = await supabase
+          .from("users")
+          .select("*, teamId:teams!team_id(*)")
+          .neq("role", "Admin")
+          .order("created_at", { ascending: false });
+
+        if (res3.error) throw res3.error;
+        dbStudents = res3.data;
+      }
+    }
 
     // Fetch all teams and their leads
     const { data: dbTeams, error: teamsError } = await supabase

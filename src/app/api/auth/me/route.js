@@ -15,13 +15,38 @@ export async function GET(req) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Select user details and perform a join on the 'teams' table
-    const { data: user, error } = await supabase
+    let user = null;
+    let error = null;
+
+    // Try fallback options due to duplicate foreign key constraints in user DB setup
+    const res1 = await supabase
       .from("users")
-      .select("*, teamId:teams!team_id(*)")
+      .select("*, teamId:teams!fk_users_team_id(*)")
       .eq("id", decoded.userId)
       .maybeSingle();
 
-    if (error) throw error;
+    if (!res1.error) {
+      user = res1.data;
+    } else {
+      const res2 = await supabase
+        .from("users")
+        .select("*, teamId:teams!users_team_id_fkey(*)")
+        .eq("id", decoded.userId)
+        .maybeSingle();
+
+      if (!res2.error) {
+        user = res2.data;
+      } else {
+        const res3 = await supabase
+          .from("users")
+          .select("*, teamId:teams!team_id(*)")
+          .eq("id", decoded.userId)
+          .maybeSingle();
+
+        if (res3.error) throw res3.error;
+        user = res3.data;
+      }
+    }
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
