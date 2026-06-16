@@ -250,6 +250,9 @@ export default function AdminPanel() {
   const uniqueStudentCampuses = ["All", ...new Set(data.students.map(s => s.campus).filter(Boolean))];
   const uniqueSubmissionCampuses = ["All", ...new Set(data.projects.map(p => p.submitterId?.campus).filter(Boolean))];
 
+  // Calculate total linkedin posts shared
+  const totalLinkedinPostsEver = data.students.reduce((sum, student) => sum + (student.linkedinSubmissionCount || 0), 0);
+
   // Filter functions
   const filteredStudents = data.students.filter(
     (student) =>
@@ -291,7 +294,7 @@ export default function AdminPanel() {
       {error && <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>}
 
       {/* STAT CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
         <div className="glass-panel p-6 rounded-2xl border border-white/5 space-y-2">
           <div className="flex items-center justify-between text-gray-500">
             <span className="text-xs uppercase tracking-wider font-semibold">Total Students</span>
@@ -326,6 +329,14 @@ export default function AdminPanel() {
           <p className="text-3xl font-bold text-white">
             {data.projects.filter((p) => p.type === "Main").length}
           </p>
+        </div>
+
+        <div className="glass-panel p-6 rounded-2xl border border-white/5 space-y-2">
+          <div className="flex items-center justify-between text-gray-500">
+            <span className="text-xs uppercase tracking-wider font-semibold">Total LinkedIn Posts</span>
+            <FaLinkedin className="text-lg text-[#3b8fd9]" />
+          </div>
+          <p className="text-3xl font-bold text-white">{totalLinkedinPostsEver}</p>
         </div>
       </div>
 
