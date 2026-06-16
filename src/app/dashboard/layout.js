@@ -314,7 +314,7 @@ function DashboardShell({ children }) {
       <div className="bg-gradient-to-r from-red-600/90 to-red-500/90 border-b border-red-500 shadow-md print:hidden relative z-30">
         <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-center">
           <p className="text-white text-sm font-medium flex items-center gap-2 animate-pulse">
-            <span className="text-lg">🚨</span> Announcement: Mini projects Deadline till 13th June 12am.
+            <span className="text-lg">🚨</span> Announcement: Main projects Deadline till 20th June 6pm.
           </p>
         </div>
       </div>

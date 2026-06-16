@@ -13,6 +13,7 @@ export default function AdminPanel() {
   const [data, setData] = useState({ students: [], teams: [], projects: [] });
   const [problems, setProblems] = useState([]);
   const [linkedinPosts, setLinkedinPosts] = useState([]);
+  const [submissionFilter, setSubmissionFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -200,6 +201,26 @@ export default function AdminPanel() {
       setError("Failed to submit review.");
     } finally {
       setReviewLoading(false);
+    }
+  };
+
+  const handleDeleteLinkedinPost = async (postId) => {
+    if (!confirm("Are you sure you want to delete this LinkedIn post submission?")) return;
+    try {
+      const res = await fetch("/api/admin/linkedin/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId }),
+      });
+      if (res.ok) {
+        setSuccess("LinkedIn post deleted successfully!");
+        fetchLinkedinPosts();
+      } else {
+        const json = await res.json();
+        setError(json.error || "Failed to delete post.");
+      }
+    } catch (err) {
+      setError("Error deleting post.");
     }
   };
 
@@ -491,7 +512,23 @@ export default function AdminPanel() {
 
       {/* TAB CONTENT: SUBMISSIONS */}
       {activeTab === "submissions" && (
-        <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            {["All", "Mini", "Main"].map(type => (
+              <button
+                key={type}
+                onClick={() => setSubmissionFilter(type)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                  submissionFilter === type
+                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                    : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                {type} Projects
+              </button>
+            ))}
+          </div>
+          <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-white/5 text-gray-400 font-semibold border-b border-white/5 uppercase text-xs">
@@ -506,7 +543,7 @@ export default function AdminPanel() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {data.projects.map((proj) => (
+                {data.projects.filter(p => submissionFilter === "All" || p.type === submissionFilter).map((proj) => (
                   <tr key={proj._id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
@@ -559,6 +596,7 @@ export default function AdminPanel() {
             </table>
           </div>
         </div>
+        </div>
       )}
 
       {/* TAB CONTENT: LINKEDIN REVIEWS */}
@@ -598,17 +636,26 @@ export default function AdminPanel() {
                         {new Date(post.created_at).toLocaleString()}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              onClick={() => handleLinkedinReview(post.id, post.user.id, star)}
-                              title={`Award ${star} stars`}
-                              className="text-gray-600 hover:text-amber-400 hover:scale-110 transition-all cursor-pointer"
-                            >
-                              <FaStar className="text-lg" />
-                            </button>
-                          ))}
+                        <div className="flex items-center justify-center gap-4">
+                          <div className="flex items-center justify-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                onClick={() => handleLinkedinReview(post.id, post.user.id, star)}
+                                title={`Award ${star} stars`}
+                                className="text-gray-600 hover:text-amber-400 hover:scale-110 transition-all cursor-pointer"
+                              >
+                                <FaStar className="text-lg" />
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            onClick={() => handleDeleteLinkedinPost(post.id)}
+                            title="Delete wrong link"
+                            className="text-red-500/50 hover:text-red-400 hover:scale-110 transition-all cursor-pointer"
+                          >
+                            <FaTrash className="text-sm" />
+                          </button>
                         </div>
                       </td>
                     </tr>
