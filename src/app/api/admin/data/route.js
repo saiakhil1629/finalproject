@@ -65,6 +65,7 @@ export async function GET(req) {
       rating: student.rating,
       role: student.role,
       linkedinSubmissionCount: student.linkedin_submission_count || 0,
+      linkedinScore: student.linkedin_score || 0,
       teamId: student.teamId ? { _id: student.teamId.id, name: student.teamId.name } : null
     }));
 

@@ -146,6 +146,24 @@ export default function AdminPanel() {
     }
   };
 
+  const handleLinkedinScoreChange = async (studentId, newScore) => {
+    try {
+      const res = await fetch("/api/admin/users/linkedin-score", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: studentId, newScore: parseInt(newScore) }),
+      });
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        alert("Failed to update LinkedIn score");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error updating LinkedIn score");
+    }
+  };
+
   const handleDeleteTeam = async (teamId) => {
     if (!confirm("Are you sure you want to delete this team? All members' roles and team status will be reset.")) return;
 
@@ -467,6 +485,7 @@ export default function AdminPanel() {
                     <th className="px-6 py-4">Campus</th>
                     <th className="px-6 py-4">Class/Sec/Roll</th>
                     <th className="px-6 py-4">Rating</th>
+                    <th className="px-6 py-4">LinkedIn Score</th>
                     <th className="px-6 py-4">Team</th>
                   </tr>
                 </thead>
@@ -480,6 +499,35 @@ export default function AdminPanel() {
                         {student.class} - {student.section} - #{student.rollNumber}
                       </td>
                       <td className="px-6 py-4 text-amber-400 font-bold">{"★".repeat(student.rating || 5)}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5">
+                          <button 
+                            onClick={() => handleLinkedinScoreChange(student._id, Math.max(0, (student.linkedinScore || 0) - 1))}
+                            className="w-6 h-6 bg-white/5 hover:bg-red-500/20 text-red-400 rounded-md border border-white/5 flex items-center justify-center transition-colors text-xs font-bold cursor-pointer"
+                            title="Decrease LinkedIn score by 1"
+                          >
+                            -
+                          </button>
+                          <input 
+                            type="number" 
+                            value={student.linkedinScore || 0} 
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              if (!isNaN(val)) {
+                                handleLinkedinScoreChange(student._id, Math.max(0, val));
+                              }
+                            }}
+                            className="w-12 py-0.5 bg-black/40 border border-white/5 rounded text-center text-white font-mono text-xs focus:outline-none focus:border-emerald-500/50"
+                          />
+                          <button 
+                            onClick={() => handleLinkedinScoreChange(student._id, (student.linkedinScore || 0) + 1)}
+                            className="w-6 h-6 bg-white/5 hover:bg-emerald-500/20 text-emerald-400 rounded-md border border-white/5 flex items-center justify-center transition-colors text-xs font-bold cursor-pointer"
+                            title="Increase LinkedIn score by 1"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-gray-400">{student.teamId ? student.teamId.name : "None"}</td>
                     </tr>
                   ))}
