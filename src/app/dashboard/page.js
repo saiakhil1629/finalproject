@@ -3,6 +3,7 @@
 import { useUser } from "@/context/UserContext";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { FaGithub, FaImage, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaFileUpload, FaEdit, FaTimes } from "react-icons/fa";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 
@@ -457,6 +458,19 @@ export default function Dashboard() {
                 <p className="text-sm max-w-xs mx-auto">
                   Only the <strong>Team Lead</strong> can view and submit the main project for the entire team.
                 </p>
+              </div>
+            ) : !user.teamId?.problem_statement_id ? (
+              <div className="py-12 text-center text-amber-500/80 space-y-4">
+                <FaExclamationCircle className="text-4xl mx-auto text-amber-500/60 animate-pulse" />
+                <p className="text-sm max-w-xs mx-auto font-medium leading-relaxed">
+                  Go and select a problem statement first, then you will be allowed to submit your main project.
+                </p>
+                <Link
+                  href="/dashboard/problems"
+                  className="inline-flex items-center justify-center px-6 py-2.5 mt-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition-all active:scale-95 shadow-md shadow-amber-500/10 cursor-pointer"
+                >
+                  Select Problem Statement
+                </Link>
               </div>
             ) : submissions.mainProject ? (
               <div className="space-y-4 py-4 text-center">

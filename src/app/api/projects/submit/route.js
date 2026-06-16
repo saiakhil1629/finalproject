@@ -34,6 +34,17 @@ export async function POST(req) {
       if (user.role !== "Lead" || !user.team_id) {
         return NextResponse.json({ error: "Only team leads can submit the main project" }, { status: 403 });
       }
+
+      // Check if the team has selected a problem statement
+      const { data: teamData, error: teamError } = await supabase
+        .from("teams")
+        .select("problem_statement_id")
+        .eq("id", user.team_id)
+        .single();
+
+      if (teamError || !teamData || !teamData.problem_statement_id) {
+        return NextResponse.json({ error: "Please select a problem statement before submitting the main project." }, { status: 400 });
+      }
     }
 
     // Check if project already submitted
