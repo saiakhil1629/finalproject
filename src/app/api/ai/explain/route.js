@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import Groq from "groq-sdk";
 
 export async function POST(req) {
   try {
@@ -9,12 +9,11 @@ export async function POST(req) {
       return NextResponse.json({ error: "Title and description are required" }, { status: 400 });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: "Gemini API key is not configured on the server" }, { status: 500 });
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json({ error: "Groq API key is not configured on the server" }, { status: 500 });
     }
 
-    // Initialize the official Google Gen AI SDK
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const prompt = `Act as a Senior Software Engineer mentoring an intern. 
 You are given the following internship problem statement.
@@ -29,23 +28,19 @@ Format your response in Markdown. Include:
 
 Keep it encouraging, concise, and highly actionable. Avoid overly dense text; use formatting (bolding, lists) to make it scannable.`;
 
-    let response;
-    try {
-      response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-      });
-    } catch (err) {
-      console.warn("gemini-2.5-flash failed (likely high demand), falling back to gemini-1.5-flash:", err.message);
-      response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: prompt,
-      });
-    }
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      model: "llama-3.1-8b-instant",
+    });
 
-    return NextResponse.json({ explanation: response.text });
+    return NextResponse.json({ explanation: chatCompletion.choices[0]?.message?.content || "" });
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Groq API Error:", error);
     return NextResponse.json(
       { error: "Failed to generate explanation. Details: " + (error.message || error.toString()) },
       { status: 500 }
