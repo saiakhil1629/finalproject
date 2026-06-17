@@ -250,7 +250,7 @@ export default function ResumeBuilder() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                       <input type="text" placeholder="Project Title" value={proj.title} onChange={(e) => handleArrayChange("projects", i, "title", e.target.value)} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-white text-sm" />
                       <input type="text" placeholder="Tech Stack (e.g. React, Node.js)" value={proj.tools} onChange={(e) => handleArrayChange("projects", i, "tools", e.target.value)} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-white text-sm" />
-                      <input type="text" placeholder="Live Link / GitHub (Optional)" value={proj.link} onChange={(e) => handleArrayChange("projects", i, "link", e.target.value)} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-white text-sm md:col-span-2" />
+                      <input type="text" placeholder="GitHub Link (Optional)" value={proj.link} onChange={(e) => handleArrayChange("projects", i, "link", e.target.value)} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-white text-sm md:col-span-2" />
                       <textarea placeholder="Description and your contributions..." value={proj.details} onChange={(e) => handleArrayChange("projects", i, "details", e.target.value)} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-white text-sm md:col-span-2 min-h-[80px]" />
                     </div>
                   </div>
