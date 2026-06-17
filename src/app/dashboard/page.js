@@ -14,7 +14,7 @@ export default function Dashboard() {
   
   // Forms state
   const [miniForm, setMiniForm] = useState({ githubLink: "", image: "" });
-  const [mainForm, setMainForm] = useState({ githubLink: "", image: "", liveLink: "" });
+  const [mainForm, setMainForm] = useState({ githubLink: "", image: "" });
   
   const [miniStatus, setMiniStatus] = useState({ loading: false, success: "", error: "" });
   const [mainStatus, setMainStatus] = useState({ loading: false, success: "", error: "" });
@@ -25,7 +25,7 @@ export default function Dashboard() {
 
   // Edit forms state
   const [editingProject, setEditingProject] = useState(null);
-  const [editForm, setEditForm] = useState({ githubLink: "", image: "", liveLink: "" });
+  const [editForm, setEditForm] = useState({ githubLink: "", image: "" });
   const [editStatus, setEditStatus] = useState({ loading: false, success: "", error: "" });
 
   const fetchSubmissions = async () => {
@@ -151,7 +151,7 @@ export default function Dashboard() {
       const res = await fetch("/api/projects/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "Main", githubLink: mainForm.githubLink, imageUrl: mainForm.image, liveLink: mainForm.liveLink }),
+        body: JSON.stringify({ type: "Main", githubLink: mainForm.githubLink, imageUrl: mainForm.image }),
       });
 
       const data = await res.json();
@@ -199,7 +199,6 @@ export default function Dashboard() {
     setEditForm({
       githubLink: project.githubLink,
       image: project.imageUrl,
-      liveLink: project.liveLink || "",
     });
     setEditStatus({ loading: false, error: "", success: "" });
   };
@@ -220,7 +219,6 @@ export default function Dashboard() {
           id: editingProject._id,
           githubLink: editForm.githubLink,
           imageUrl: editForm.image,
-          liveLink: editForm.liveLink,
         }),
       });
 
@@ -503,7 +501,7 @@ export default function Dashboard() {
             ) : (
               <form onSubmit={handleMainSubmit} className="space-y-4">
                 <p className="text-gray-400 text-sm mb-4">
-                  As the Team Lead, submit the main project GitHub link, final output screenshot, and optional live website link for the entire team.
+                  As the Team Lead, submit the main project GitHub link and final output screenshot for the entire team.
                 </p>
 
                 <div className="relative">
@@ -515,17 +513,6 @@ export default function Dashboard() {
                     onChange={(e) => setMainForm({ ...mainForm, githubLink: e.target.value })}
                     className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
                     required
-                  />
-                </div>
-
-                <div className="relative">
-                  <FaLink className="absolute left-4 top-3.5 text-gray-500" />
-                  <input
-                    type="url"
-                    placeholder="Live Website URL (Optional)"
-                    value={mainForm.liveLink}
-                    onChange={(e) => setMainForm({ ...mainForm, liveLink: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
                   />
                 </div>
 
@@ -612,22 +599,6 @@ export default function Dashboard() {
                   />
                 </div>
               </div>
-
-              {editingProject.type === "Main" && (
-                <div>
-                  <label className="block text-xs text-gray-500 font-semibold uppercase mb-1">Live Website URL</label>
-                  <div className="relative">
-                    <FaLink className="absolute left-4 top-3.5 text-gray-500" />
-                    <input
-                      type="url"
-                      placeholder="Live Website URL (Optional)"
-                      value={editForm.liveLink}
-                      onChange={(e) => setEditForm({ ...editForm, liveLink: e.target.value })}
-                      className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
-                    />
-                  </div>
-                </div>
-              )}
 
               <div>
                 <label className="block text-xs text-gray-500 font-semibold uppercase mb-1">Output Screenshot</label>
