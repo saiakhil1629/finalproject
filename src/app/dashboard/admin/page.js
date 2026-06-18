@@ -164,6 +164,37 @@ export default function AdminPanel() {
     }
   };
 
+  const handleToggleAdminRole = async (studentId, currentRole) => {
+    const newRole = currentRole === "Admin" ? "None" : "Admin";
+    const confirmMessage = currentRole === "Admin"
+      ? "Are you sure you want to revoke Admin access for this user?"
+      : "Are you sure you want to grant Admin access to this user?";
+
+    if (!confirm(confirmMessage)) return;
+
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await fetch("/api/admin/users/role", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: studentId, newRole }),
+      });
+
+      const resJson = await res.json();
+      if (res.ok) {
+        setSuccess(resJson.message || "User role updated successfully!");
+        fetchAdminData();
+      } else {
+        setError(resJson.error || "Failed to update user role");
+      }
+    } catch (error) {
+      console.error(error);
+      setError("Error updating user role");
+    }
+  };
+
   const handleDeleteTeam = async (teamId) => {
     if (!confirm("Are you sure you want to delete this team? All members' roles and team status will be reset.")) return;
 
@@ -487,6 +518,8 @@ export default function AdminPanel() {
                     <th className="px-6 py-4">Rating</th>
                     <th className="px-6 py-4">LinkedIn Score</th>
                     <th className="px-6 py-4">Team</th>
+                    <th className="px-6 py-4">Role</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -529,6 +562,35 @@ export default function AdminPanel() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-gray-400">{student.teamId ? student.teamId.name : "None"}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                          student.role === "Admin"
+                            ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                            : student.role === "Lead"
+                              ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                              : student.role === "Member"
+                                ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                                : "bg-white/5 text-gray-400 border border-white/5"
+                        }`}>
+                          {student.role || "None"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {student._id !== user?.id ? (
+                          <button
+                            onClick={() => handleToggleAdminRole(student._id, student.role)}
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                              student.role === "Admin"
+                                ? "bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20 hover:border-red-500/30"
+                                : "bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border-purple-500/20 hover:border-purple-500/30"
+                            }`}
+                          >
+                            {student.role === "Admin" ? "Revoke Admin" : "Make Admin"}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-500 italic">You (Current Admin)</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

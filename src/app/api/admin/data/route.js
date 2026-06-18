@@ -28,14 +28,13 @@ export async function GET(req) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Fetch all users (excluding Admin)
+    // Fetch all users (including Admins)
     let dbStudents = null;
 
     // Try fallback options due to duplicate foreign key constraints in user DB setup
     const res1 = await supabase
       .from("users")
       .select("*, teamId:teams!fk_users_team_id(*)")
-      .neq("role", "Admin")
       .order("created_at", { ascending: false });
 
     if (!res1.error) {
@@ -44,7 +43,6 @@ export async function GET(req) {
       const res2 = await supabase
         .from("users")
         .select("*, teamId:teams!users_team_id_fkey(*)")
-        .neq("role", "Admin")
         .order("created_at", { ascending: false });
 
       if (!res2.error) {
@@ -53,7 +51,6 @@ export async function GET(req) {
         const res3 = await supabase
           .from("users")
           .select("*, teamId:teams!team_id(*)")
-          .neq("role", "Admin")
           .order("created_at", { ascending: false });
 
         if (res3.error) throw res3.error;
