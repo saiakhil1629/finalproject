@@ -103,17 +103,22 @@ export async function POST(req) {
       }
     }
 
-    // Insert new project submission
+    // Insert new project submission dynamically constructing payload to avoid schema errors if live_link column is missing
+    const insertPayload = {
+      type,
+      submitter_id: user.id,
+      team_id: type === "Main" ? user.team_id : null,
+      github_link: githubLink,
+      image_url: finalImageUrl,
+    };
+
+    if (type === "Main" && liveLink) {
+      insertPayload.live_link = liveLink;
+    }
+
     const { data: project, error: insertError } = await supabase
       .from("projects")
-      .insert({
-        type,
-        submitter_id: user.id,
-        team_id: type === "Main" ? user.team_id : null,
-        github_link: githubLink,
-        image_url: finalImageUrl,
-        live_link: type === "Main" ? (liveLink || null) : null,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
@@ -209,16 +214,21 @@ export async function PUT(req) {
       }
     }
 
-    // Update project submission details
+    // Update project submission details dynamically constructing payload to avoid schema errors if live_link column is missing
+    const updatePayload = {
+      github_link: githubLink,
+      image_url: finalImageUrl,
+      status: "Pending", // reset status to Pending review
+      admin_comment: "", // clear admin comment
+    };
+
+    if (project.type === "Main" && liveLink) {
+      updatePayload.live_link = liveLink;
+    }
+
     const { data: updatedProject, error: updateError } = await supabase
       .from("projects")
-      .update({
-        github_link: githubLink,
-        image_url: finalImageUrl,
-        live_link: project.type === "Main" ? (liveLink || null) : null,
-        status: "Pending", // reset status to Pending review
-        admin_comment: "", // clear admin comment
-      })
+      .update(updatePayload)
       .eq("id", id)
       .select()
       .single();

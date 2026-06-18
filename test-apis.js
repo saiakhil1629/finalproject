@@ -66,9 +66,21 @@ async function runTests() {
     rating: 4
   };
 
+  const member2Data = {
+    campus: "Aditya KKD",
+    name: "Member Student 2 " + suffix,
+    sucNumber: "mem2_" + suffix,
+    password: "Password123!",
+    section: "A",
+    class: "CSE",
+    rollNumber: "M02",
+    rating: 4
+  };
+
   let adminCookie = "";
   let leadCookie = "";
   let memberCookie = "";
+  let member2Cookie = "";
   let teamId = "";
   let joinCode = "";
 
@@ -109,6 +121,18 @@ async function runTests() {
     if (!regMemRes.ok) throw new Error("Member registration failed");
     memberCookie = getCookieString(regMemRes.headers);
 
+    // 3.5 Register Member 2
+    console.log("\n3.5 Registering Member 2 user...");
+    const regMem2Res = await fetch(`${BASE_URL}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(member2Data)
+    });
+    const regMem2Json = await regMem2Res.json();
+    console.log(`Status: ${regMem2Res.status}`, regMem2Json);
+    if (!regMem2Res.ok) throw new Error("Member 2 registration failed");
+    member2Cookie = getCookieString(regMem2Res.headers);
+
     // 4. Test Get Profile (me) for Lead
     console.log("\n4. Fetching Profile (me) for Lead...");
     const meRes = await fetch(`${BASE_URL}/api/auth/me`, {
@@ -148,6 +172,20 @@ async function runTests() {
     console.log(`Status: ${joinRes.status}`, joinJson);
     if (!joinRes.ok) throw new Error("Join Team failed");
 
+    // 6.5 Join the Team (Member 2)
+    console.log(`\n6.5 Joining team with code ${joinCode} (Member 2)...`);
+    const join2Res = await fetch(`${BASE_URL}/api/team/join`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Cookie": member2Cookie
+      },
+      body: JSON.stringify({ joinCode })
+    });
+    const join2Json = await join2Res.json();
+    console.log(`Status: ${join2Res.status}`, join2Json);
+    if (!join2Res.ok) throw new Error("Join Team (Member 2) failed");
+
     // 7. Get Team Members
     console.log("\n7. Fetching Team Members...");
     const membersRes = await fetch(`${BASE_URL}/api/team/members`, {
@@ -177,6 +215,28 @@ async function runTests() {
     const subMiniJson = await subMiniRes.json();
     console.log(`Status: ${subMiniRes.status}`, subMiniJson);
     if (!subMiniRes.ok) throw new Error("Submit Mini Project failed");
+
+    // 8.5 Fetch and select a problem statement for the team
+    console.log("\n8.5 Fetching and selecting a problem statement for the team...");
+    const probFetchRes = await fetch(`${BASE_URL}/api/problems`);
+    const probFetchJson = await probFetchRes.json();
+    if (!probFetchRes.ok || !probFetchJson.problems || probFetchJson.problems.length === 0) {
+      throw new Error("Failed to fetch problem statements for selection");
+    }
+    const problemId = probFetchJson.problems[0]._id;
+    console.log(`Fetched problem: "${probFetchJson.problems[0].title}" (ID: ${problemId})`);
+
+    const selectProbRes = await fetch(`${BASE_URL}/api/team/select-problem`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Cookie": leadCookie
+      },
+      body: JSON.stringify({ problemId })
+    });
+    const selectProbJson = await selectProbRes.json();
+    console.log(`Select Problem Status: ${selectProbRes.status}`, selectProbJson);
+    if (!selectProbRes.ok) throw new Error("Select Problem Statement failed");
 
     // 9. Submit Main Project (Lead)
     console.log("\n9. Submitting Main Project (Lead)...");
