@@ -3,7 +3,7 @@
 import { UserProvider, useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUsers, FaBookOpen, FaSignOutAlt, FaUserShield, FaProjectDiagram, FaFileAlt, FaTrophy, FaBell, FaBars, FaTimes } from "react-icons/fa";
 import BackgroundMesh from "@/components/BackgroundMesh";
@@ -109,11 +109,23 @@ function DashboardShell({ children }) {
   const { user, loading, logout } = useUser();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showDeadlinePopup, setShowDeadlinePopup] = useState(false);
 
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  // Show deadline popup on mount once per session for students
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    if (user && user.role !== "Admin") {
+      const hasSeen = sessionStorage.getItem("hasSeenDeadlinePopup_21stJune");
+      if (!hasSeen) {
+        setShowDeadlinePopup(true);
+      }
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -314,10 +326,78 @@ function DashboardShell({ children }) {
       <div className="bg-gradient-to-r from-red-600/90 to-red-500/90 border-b border-red-500 shadow-md print:hidden relative z-30">
         <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-center">
           <p className="text-white text-sm font-medium flex items-center gap-2 animate-pulse">
-            <span className="text-lg">🚨</span> Announcement: Main projects Deadline till 20th June 6pm.
+            <span className="text-lg">🚨</span> Announcement: Main projects Deadline till 21th June 6pm.
           </p>
         </div>
       </div>
+
+      {/* Deadline Alert Popup Modal */}
+      <AnimatePresence>
+        {showDeadlinePopup && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 px-4 print:hidden">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setShowDeadlinePopup(false);
+                sessionStorage.setItem("hasSeenDeadlinePopup_21stJune", "true");
+              }}
+              className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+            />
+            
+            {/* Modal Content */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="relative max-w-md w-full bg-[#111111]/95 border border-red-500/40 rounded-3xl p-6 shadow-2xl backdrop-blur-xl overflow-hidden"
+            >
+              {/* Top ambient glow */}
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-red-500/10 blur-[40px] rounded-full pointer-events-none" />
+
+              {/* Glowing header banner / indicator */}
+              <div className="flex flex-col items-center text-center space-y-4 relative z-10">
+                <div className="w-16 h-16 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center justify-center text-red-500 text-3xl animate-bounce shadow-lg shadow-red-500/5">
+                  🚨
+                </div>
+                
+                <h3 className="text-xl font-bold tracking-tight text-white">
+                  Deadline Alert
+                </h3>
+                
+                <p className="text-gray-300 text-sm leading-relaxed mt-2">
+                  Please note that the deadline for submitting your <span className="text-red-400 font-semibold">Main projects</span> has been extended/set to:
+                </p>
+
+                <div className="w-full bg-gradient-to-r from-red-950/40 via-red-900/30 to-red-950/40 border border-red-500/25 py-3 px-4 rounded-2xl my-3 shadow-inner">
+                  <span className="text-white font-bold text-lg tracking-wide block">
+                    21th June, 6:00 PM
+                  </span>
+                </div>
+
+                <p className="text-gray-400 text-xs leading-relaxed">
+                  Make sure to submit your GitHub repository links and output screenshots before the deadline to earn your evaluation scores.
+                </p>
+
+                <div className="w-full pt-4">
+                  <button
+                    onClick={() => {
+                      setShowDeadlinePopup(false);
+                      sessionStorage.setItem("hasSeenDeadlinePopup_21stJune", "true");
+                    }}
+                    className="w-full py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-red-500/20 active:scale-[0.98] cursor-pointer"
+                  >
+                    Acknowledge & Continue
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Main Dashboard Content */}
       <AnimatePresence mode="wait">
